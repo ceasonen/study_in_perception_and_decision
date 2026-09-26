@@ -1,0 +1,55 @@
+name: install_ubuntu_deps
+runs:
+  using: composite
+  steps:
+  - name: install cmake
+    run: |
+      echo $(date +%F) > ./date
+      echo $(git ls-remote https://github.com/facebookresearch/habitat-lab.git HEAD | awk '{ print $1}') > ./hablab_sha
+      cat ./hablab_sha
+      wget https://cmake.org/files/v3.28/cmake-3.28.3-linux-x86_64.sh
+      sudo mkdir /opt/cmake328
+      sudo sh ./cmake-3.28.3-linux-x86_64.sh --prefix=/opt/cmake328 --skip-license
+      sudo ln -sf /opt/cmake328/bin/cmake /usr/local/bin/cmake
+      sudo ln -sf /opt/cmake328/bin/ctest /usr/local/bin/ctest
+    shell: bash
+  - name: Install dependencies
+    run: |-
+      echo "Install dependencies"
+      sudo apt-get update || true
+      sudo apt-get install -y --no-install-recommends \
+        build-essential \
+        git \
+        git-lfs \
+        curl \
+        vim \
+        ca-certificates \
+        libjpeg-dev \
+        libglm-dev \
+        libegl1-mesa-dev \
+        ninja-build \
+        xorg-dev \
+        freeglut3-dev \
+        pkg-config \
+        wget \
+        zip \
+        lcov\
+        libhdf5-dev \
+        libomp-dev \
+        unzip || true
+    shell: bash
+  - name: Setup miniconda
+    uses: conda-incubator/setup-miniconda@v3.0.1
+    with:
+      miniconda-version: "latest"
+      python-version: "3.12"
+      activate-environment: "habitat"
+  - name: Install conda and dependencies
+    run: |-
+      echo "Install conda and dependencies"
+      conda install -y pytorch torchvision pytorch-cuda=12.4 -c pytorch -c nvidia
+      conda install -y -c conda-forge ninja numpy=1.26.4 pytest pytest-cov ccache hypothesis pytest-mock scikit-build-core pybind11
+      pip install pytest-sugar pytest-xdist pytest-benchmark "opencv-python<4.12" cython mock
+      # Verify numpy was not upgraded by pip (opencv-python>=4.12 pulls numpy>=2)
+      python -c "import numpy; assert numpy.__version__.startswith('1.'), f'numpy {numpy.__version__} != 1.26.4; pip may have upgraded it'"
+    shell: bash -el {0}

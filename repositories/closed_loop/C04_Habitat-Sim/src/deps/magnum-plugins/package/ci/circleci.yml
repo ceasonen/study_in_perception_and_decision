@@ -1,0 +1,787 @@
+version: 2.1
+
+orbs:
+  # Version 3.2.4 is the "new" uploader, but it's a 50 MB Node.js *binary* and
+  # doesn't work on ARM64 Linux (or ARM Macs, or FreeBSD for that matter) and
+  # nobody seems to care. Issues opened since Septembe 2021:
+  #   https://github.com/codecov/uploader/issues/347
+  #   https://github.com/codecov/uploader/issues/523
+  #   https://github.com/codecov/uploader/issues/849
+  # The old 1.1.1 still seems to work even though codecov got removed from pip
+  # on 2023-04-14.
+  codecov: codecov/codecov@1.1.1
+
+executors:
+  ubuntu-18_04:
+    docker:
+    - image: ubuntu:bionic-20220427
+  # Used by the ThreadSanitizer build. Cannot be a Docker because we need to
+  # disable ASLR which can only be done with a real VM.
+  ubuntu-20_04:
+    machine:
+      image: ubuntu-2004:2024.11.1
+  # Anything below 13.4.1 (and all x86 variants) are deprecated as of June 28th
+  # 2024
+  xcode-13_4:
+    macos:
+      xcode: 13.4.1
+    resource_class: macos.m1.medium.gen1
+  emscripten1:
+    docker:
+    # 1.39.0 is the oldest on Docker. Anything before 1.39.2 is useless as emar
+    # randomly asserts: https://github.com/emscripten-core/emscripten/pull/9742
+    # Then, anything before 1.39.6 is useless as well because emar has a
+    # filesystem race and randomly complains that a file doesn't exist:
+    # https://github.com/mosra/magnum/issues/413,
+    # https://github.com/emscripten-core/emscripten/pull/10161
+    - image: emscripten/emsdk:1.39.6-upstream
+  emscripten2:
+    docker:
+    # While 1.39.6 supports some WIP variant of SIMD, the finalized support is
+    # only since 2.0.18, and then the first non-broken emsdk is 2.0.26. See
+    # Corrade's package/ci/circleci.yml for more information.
+    - image: emscripten/emsdk:2.0.26
+  android-29:
+    machine:
+      image: android:2021.10.1
+  arm64:
+    machine:
+      image: ubuntu-2004:2023.07.1
+    resource_class: arm.medium
+
+commands:
+  install-base-linux:
+    parameters:
+      extra:
+        type: string
+        default: ""
+      sudo:
+        type: string
+        default: ""
+    steps:
+    - run:
+        # TODO when switching to the new codecov uploader, gpg and git needs to
+        #   be installed as well
+        name: Update apt and install base packages
+        # Git is needed always for cloning Corrade and Magnum
+        command: |
+          << parameters.sudo >> apt update
+          if [[ "$CMAKE_CXX_FLAGS" == *"--coverage"* ]]; then export LCOV_PACKAGES="lcov curl"; fi
+          << parameters.sudo >> apt install -y git ninja-build $LCOV_PACKAGES << parameters.extra >>
+
+  cap-ninja-jobs:
+    parameters:
+      count:
+        type: integer
+        # It reports 36 cores and ninja goes with 38 currently, RAM fluctuates
+        # from 3 to 70 GB.
+        default: 24
+    steps:
+    - run:
+        name: Query CPU cores, default Ninja parallelism and available RAM, cap jobs
+        command: |
+          nproc
+          ninja --help 2>&1 | grep "N jobs in parallel" || true
+          free
+          echo "export NINJA_JOBS=-j<< parameters.count >>" >> $BASH_ENV
+
+  install-base-macos:
+    parameters:
+      extra:
+        type: string
+        default: ""
+    steps:
+    - run:
+        name: Install base packages
+        # As usual, homebrew takes five minutes to update and then explodes in
+        # a spectacular way. How is this acceptable?!
+        command: |
+          if [[ "$CMAKE_CXX_FLAGS" == *"--coverage"* ]]; then export LCOV_PACKAGES="lcov"; fi
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake ninja $LCOV_PACKAGES << parameters.extra >>
+
+  install-base-android:
+    steps:
+    - run:
+        name: Create Android 29 x86 AVD
+        command: |
+          SYSTEM_IMAGES="system-images;android-29;default;x86"
+          sdkmanager "$SYSTEM_IMAGES"
+          echo "no" | avdmanager --verbose create avd -n test -k "$SYSTEM_IMAGES"
+    - run:
+        name: Launch Android emulator
+        command: |
+          emulator -avd test -delay-adb -verbose -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+        background: true
+    - run:
+        name: Update apt and install base packages
+        # Compared to Docker images this needs sudo, for some reason
+        command: |
+          sudo apt update
+          sudo apt install -y ninja-build
+
+  install-gcc-4_8:
+    steps:
+    - run:
+        name: Install GCC 4.8
+        # For some reason, CMake needs a working C compiler, so provice CC as
+        # well for the case when default gcc isn't installed.
+        command: |
+          apt install -y g++-4.8
+          echo 'export CC=gcc-4.8' >> $BASH_ENV
+          echo 'export CXX=g++-4.8' >> $BASH_ENV
+
+  # While we want to make sure the project builds on GCC 4.8 as certain
+  # embedded toolchains still use it, for Clang we just pick the version
+  # available in the oldest supported distro.
+  install-clang:
+    parameters:
+      sudo:
+        type: string
+        default: ""
+      symbolizer-link:
+        type: boolean
+        default: true
+    steps:
+    - run:
+        # For some reason, CMake needs a working C compiler, so provide CC as
+        # well for the case when default gcc isn't installed.
+        name: Install Clang
+        command: |
+          << parameters.sudo >> apt install -y clang
+          echo 'export CC=clang' >> $BASH_ENV
+          echo 'export CXX=clang++' >> $BASH_ENV
+    # With Clang 6 on 18.04, the llvm-symbolizer link needs to be set in order
+    # to have usable symbols in the output. This affects suppressions as well,
+    # meaning they won't work if the symbols are not resolvable. It's not
+    # enough to just `export ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-6.0`
+    # because it then complains that
+    #
+    #   External symbolizer path is set to '/usr/bin/llvm-symbolizer-6.0' which
+    #   isn't a known symbolizer. Please set the path to the llvm-symbolizer
+    #   binary or other known tool.
+    #
+    # Probably because because it detects tool type based on the filename? Ugh.
+    - when:
+        condition: << parameters.symbolizer-link >>
+        steps:
+        - run:
+            name: Create /usr/bin/llvm-symbolizer symlink
+            command: |
+              ls -l /usr/bin/llvm-symbolizer-6.0
+              ln -s /usr/bin/llvm-symbolizer{-6.0,}
+
+  install-cmake:
+    parameters:
+      version:
+        type: string
+      suffix:
+        type: string
+        default: Linux
+      sudo:
+        type: string
+        default: ""
+    steps:
+    - run:
+        name: Install CMake << parameters.version >>
+        command: |
+          version_short=<< parameters.version >>
+          version_short="${version_short%.*}"
+          << parameters.sudo >> apt install -y wget
+          mkdir -p $HOME/cmake && cd $HOME/cmake
+          wget -nc --no-check-certificate https://cmake.org/files/v$version_short/cmake-<< parameters.version >>-<< parameters.suffix >>-x86_64.tar.gz
+          tar --strip-components=1 -xzf cmake-<< parameters.version >>-<< parameters.suffix >>-x86_64.tar.gz
+          echo 'export PATH=$HOME/cmake/bin:$PATH' >> $BASH_ENV
+          source $BASH_ENV
+          cmake --version | grep << parameters.version >>
+          ctest --version | grep << parameters.version >>
+
+  install-nodejs:
+    parameters:
+      version:
+        type: string
+        default: "18"
+    steps:
+    - run:
+        name: Install Node.js << parameters.version >>
+        # cd'ing to the home directory as otherwise it'd download into
+        # /root/project and a checkout would then fail because it's not empty.
+        # Also emsdk forces the PATH to prefer its own nodejs, so explicitly
+        # call /usr/bin/node.
+        command: |
+          cd ~
+          curl -fsSL https://deb.nodesource.com/setup_<< parameters.version >>.x -o nodesource_setup.sh
+          bash nodesource_setup.sh
+          apt-get install -y nodejs
+          /usr/bin/node -v
+
+  install-meshoptimizer:
+    steps:
+    - run:
+        name: Install meshoptimizer
+        # few commits after 0.14 with a fix for old Apple Clang. The
+        # -fvisibility-inlines-hidden is needed to prevent "direct access in
+        # function ... means the weak symbol cannot be overridden at runtime."
+        # errors with Mac Clang.
+        command: |
+          export MESHOPTIMIZER_VERSION=97c52415c6d29f297a76482ddde22f739292446d
+          mkdir -p $HOME/meshoptimizer && cd $HOME/meshoptimizer
+          wget -nc --no-check-certificate https://github.com/zeux/meshoptimizer/archive/$MESHOPTIMIZER_VERSION.tar.gz
+          tar --strip-components=1 -xzf $MESHOPTIMIZER_VERSION.tar.gz
+          mkdir build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_INSTALL_PREFIX=$HOME/deps \
+            -DCMAKE_CXX_FLAGS="-fvisibility=hidden -fvisibility-inlines-hidden" \
+            -G Ninja
+          ninja install
+
+  install-libspng:
+    steps:
+    - run:
+        name: Install libspng
+        # 0.7.4 requires CMake 3.12 to build, 0.7.3 suffers from
+        # https://github.com/randy408/libspng/pull/245 which makes the
+        # static-only build impossible.
+        command: |
+          export LIBSPNG_VERSION=0.7.2
+          mkdir -p $HOME/libspng && cd $HOME/libspng
+          wget -nc --no-check-certificate https://github.com/randy408/libspng/archive/v$LIBSPNG_VERSION.tar.gz
+          tar --strip-components=1 -xzf v$LIBSPNG_VERSION.tar.gz
+          mkdir build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Debug \
+            -DSPNG_SHARED=OFF \
+            -DBUILD_EXAMPLES=OFF \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_INSTALL_PREFIX=$HOME/deps \
+            -G Ninja
+          ninja install
+
+  install-lunasvg:
+    steps:
+    - run:
+        name: Install LunaSVG
+        command: |
+          export LUNASVG_VERSION=v3.2.1
+          export PLUTOVG_VERSION=v1.0.0
+          mkdir -p $HOME/lunasvg && cd $HOME/lunasvg
+          wget -nc --no-check-certificate https://github.com/sammycage/lunasvg/archive/$LUNASVG_VERSION.tar.gz
+          tar --strip-components=1 -xzf $LUNASVG_VERSION.tar.gz
+          wget -nc --no-check-certificate https://github.com/sammycage/plutovg/archive/$PLUTOVG_VERSION.tar.gz
+          mkdir -p plutovg && cd plutovg
+          tar --strip-components=1 -xzf ../$PLUTOVG_VERSION.tar.gz
+          cd ..
+          mkdir build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_INSTALL_PREFIX=$HOME/deps \
+            -DCMAKE_CXX_FLAGS="-fvisibility=hidden -fvisibility-inlines-hidden" \
+            -G Ninja
+          ninja install
+
+  install-plutosvg:
+    steps:
+    - run:
+        name: Install PlutoSVG
+        command: |
+          export PLUTOSVG_VERSION=v0.0.6
+          export PLUTOVG_VERSION=v1.0.0
+          mkdir -p $HOME/plutosvg && cd $HOME/plutosvg
+          wget -nc --no-check-certificate https://github.com/sammycage/plutosvg/archive/$PLUTOSVG_VERSION.tar.gz
+          tar --strip-components=1 -xzf $PLUTOSVG_VERSION.tar.gz
+          wget -nc --no-check-certificate https://github.com/sammycage/plutovg/archive/$PLUTOVG_VERSION.tar.gz
+          mkdir -p plutovg && cd plutovg
+          tar --strip-components=1 -xzf ../$PLUTOVG_VERSION.tar.gz
+          cd ..
+          mkdir build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_INSTALL_PREFIX=$HOME/deps \
+            -DCMAKE_CXX_FLAGS="-fvisibility=hidden -fvisibility-inlines-hidden" \
+            -G Ninja
+          ninja install
+
+  install-basis:
+    parameters:
+      tag:
+        type: string
+        default: "v1_50_0_2"
+    steps:
+    - run:
+        name: Install Basis Universal << parameters.tag >>
+        command: |
+          mkdir -p $HOME/basis_universal && cd $HOME/basis_universal
+          wget -nc https://github.com/BinomialLLC/basis_universal/archive/<< parameters.tag >>.tar.gz
+          tar --strip-components 1 -xzf << parameters.tag >>.tar.gz
+          # We want to use the external Zstd instead of this
+          rm -r zstd
+
+  install-openexr:
+    parameters:
+      build:
+        type: string
+    steps:
+    - run:
+        name: Install OpenEXR
+        # Zip from https://github.com/mosra/magnum-ci/tree/openexr and
+        # self-hosted because GH Actions would make it too simple for people if
+        # you could just download the artifacts directly, right? RIGHT?
+        command: |
+          mkdir -p $HOME/deps && cd $HOME/deps
+          wget https://ci.magnum.graphics/openexr-2.5.5-<< parameters.build >>.zip
+          unzip openexr-2.5.5-<< parameters.build >>.zip
+
+  install-glslang:
+    parameters:
+      build:
+        type: string
+    steps:
+    - run:
+        name: Install glslang
+        # Zip from https://github.com/mosra/magnum-ci/tree/glslang and
+        # self-hosted because GH Actions would make it too simple for people if
+        # you could just download the artifacts directly, right? RIGHT?
+        command: |
+          mkdir -p $HOME/deps && cd $HOME/deps
+          wget https://ci.magnum.graphics/glslang-8.13.3743-<< parameters.build >>.zip
+          unzip glslang-8.13.3743-<< parameters.build >>.zip
+
+  install-spirv-tools:
+    parameters:
+      build:
+        type: string
+    steps:
+    - run:
+        name: Install SPIRV-Tools
+        # Zip from https://github.com/mosra/magnum-ci/tree/spirv-tools and
+        # self-hosted because GH Actions would make it too simple for people if
+        # you could just download the artifacts directly, right? RIGHT?
+        command: |
+          mkdir -p $HOME/deps && cd $HOME/deps
+          wget https://ci.magnum.graphics/spirv-tools-2020.4-<< parameters.build >>.zip
+          unzip spirv-tools-2020.4-<< parameters.build >>.zip
+
+  build:
+    parameters:
+      script:
+        type: string
+    steps:
+    - checkout
+    - run:
+        name: Build & test
+        command: |
+          if [ "$BUILD_STATIC" != "ON" ]; then export BUILD_STATIC=OFF; fi
+          if [ "$BUILD_DEPRECATED" != "OFF" ]; then export BUILD_DEPRECATED=ON; fi
+          ./package/ci/<< parameters.script >>
+
+  lcov:
+    steps:
+    - run:
+        name: Collect code coverage
+        # Keep in sync with PKBUILD-coverage and appveyor-desktop{,-mingw}.bat,
+        # please
+        command: |
+          lcov $LCOV_EXTRA_OPTS --directory . --capture --output-file coverage.info > /dev/null
+          lcov $LCOV_EXTRA_OPTS --extract coverage.info "*/src/Magnum*/*" --output-file coverage.info > /dev/null
+          lcov $LCOV_EXTRA_OPTS --remove coverage.info "*/MagnumExternal/*" --output-file coverage.info > /dev/null
+          lcov $LCOV_EXTRA_OPTS --remove coverage.info "*/Test/*" --output-file coverage.info > /dev/null
+          lcov $LCOV_EXTRA_OPTS --remove coverage.info "*/build/src/*" --output-file coverage.info > /dev/null
+    # Official docs say "token not needed for public repos", in reality not
+    # using the token is "extremely flakey". What's best is that if the upload
+    # fails, the damn thing exits with a success error code, and nobody cares:
+    # https://github.com/codecov/codecov-circleci-orb/issues/139
+    # https://community.codecov.com/t/commit-sha-does-not-match-circle-build/4266
+    #
+    # Second best thing is that the codecov/upload helper takes a `token`
+    # parameter. But the token parameter is an ENVIRONMENT VARIABLE NAME!! So
+    # one just *can't* pass the token there. It got changed arbitrarily in
+    # https://github.com/codecov/codecov-circleci-orb/pull/93 "because
+    # CircleCI docs suggested so", yet all codecov docs suggest just commiting
+    # that token directly to the YML files because "it's fine". So if it's
+    # fine, why do I have to suffer like this?!
+    - run:
+        name: Set codecov upload token because everything is a dumpster fire
+        # An icing on the cake is that CircleCI commands don't allow setting
+        # `environment` for `commands`, only for `jobs`, so I have to do that
+        # via bash, and because the environment isn't passsed from a run to
+        # run, use the BASH_ENV hack. Mmm. Technology.
+        command: |
+          echo 'export CODECOV_TOKEN=ca42fc68-8e0a-4338-b9ff-7d602b7febc2' >> "$BASH_ENV"
+    - codecov/upload:
+        file: coverage.info
+
+jobs:
+  linux:
+    executor: ubuntu-18_04
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
+      CONFIGURATION: Debug
+      # Testing building BasisImageConverter with OpenCL present on the system,
+      # but explicitly turned off via CMAKE_DISABLE_FIND_PACKAGE_OpenCL
+      DISABLE_OPENCL: "ON"
+      # Requires CMake 3.15, this job uses 3.5. Applies to PlutoSVG too.
+      WITH_LUNASVGIMPORTER: "OFF"
+    steps:
+    - install-base-linux:
+        # libidn11 needed by CMake. We want the OpenCL headers and ICD loader
+        # libraries to test disabling find_package(), but don't need the actual
+        # ICD
+        extra: libidn11 libfaad-dev libfreetype6-dev libjpeg-dev libopenal-dev libpng-dev libdevil-dev libharfbuzz-dev libassimp-dev libwebp-dev libzstd-dev ocl-icd-opencl-dev wget unzip
+    # Crashes or gets stuck with the default setting, only on GCC. 20 is not
+    # enough.
+    - cap-ninja-jobs:
+        count: 16
+    - install-gcc-4_8
+    - install-cmake:
+        version: "3.5.2"
+    - install-basis:
+        tag: "1.16.4"
+    - install-meshoptimizer
+    - install-libspng
+    # In repos only since 20.04, but even then would probably hit the GCC 4.8 /
+    # 5 ABI break in std::string, so keeping our own build
+    - install-glslang:
+        build: ubuntu-16.04-gcc4.8
+    - install-spirv-tools:
+        build: ubuntu-16.04-gcc4.8
+    # Can't use libopenexr-dev because of GCC 4.8 / 5 ABI break in std::string
+    - install-openexr:
+        build: ubuntu-16.04-gcc4.8
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  linux-arm64:
+    executor: arm64
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      CONFIGURATION: Debug
+      # Requires CMake 3.15, this job has 3.16. Applies to PlutoSVG too.
+      WITH_LUNASVGIMPORTER: "ON"
+    steps:
+    # Not installing the old GCC 4.8, CMake 3.5 and other ancient stuff to
+    # speed up. These are tested more than enough on other jobs, plus here we
+    # have a fresher Ubuntu so we can take them directly from the repos.
+    # Machine executors need sudo.
+    - install-base-linux:
+        extra: gcc cmake libfaad-dev libfreetype6-dev libjpeg-dev libopenal-dev libpng-dev libdevil-dev libharfbuzz-dev libassimp-dev libzstd-dev ocl-icd-opencl-dev pocl-opencl-icd glslang-dev libopenexr-dev libwebp-dev spirv-tools
+        sudo: sudo
+    - install-basis:
+        tag: "1.16.4"
+    - install-meshoptimizer
+    - install-libspng
+    - install-lunasvg
+    - install-plutosvg
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  linux-static:
+    executor: ubuntu-18_04
+    environment:
+      # STUPID yml interprets unquoted ON as a boolean
+      BUILD_STATIC: "ON"
+      CMAKE_CXX_FLAGS: --coverage
+      LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
+      CONFIGURATION: Debug
+      # Requires CMake 3.15, this job uses 3.5. Applies to PlutoSVG too.
+      WITH_LUNASVGIMPORTER: "OFF"
+    steps:
+    - install-base-linux:
+        # libidn11 needed by CMake. Basis 1.15 doesn't support OpenCL, so those
+        # packages aren't needed
+        extra: libidn11 libfaad-dev libfreetype6-dev libjpeg-dev libopenal-dev libpng-dev libdevil-dev libharfbuzz-dev libassimp-dev libwebp-dev libzstd-dev wget unzip
+    # Crashes or gets stuck with the default setting, only on GCC. 24 is not
+    # enough.
+    - cap-ninja-jobs:
+        count: 20
+    - install-gcc-4_8
+    - install-cmake:
+        version: "3.5.2"
+    - install-basis:
+        tag: "v1_15_update2"
+    - install-meshoptimizer
+    - install-libspng
+    # These two are in repos only since 20.04, but even then would probably hit
+    # the GCC 4.8 / 5 ABI break in std::string, so keeping our own builds
+    - install-glslang:
+        build: ubuntu-16.04-gcc4.8
+    - install-spirv-tools:
+        build: ubuntu-16.04-gcc4.8
+    # Can't use libopenexr-dev because of GCC 4.8 / 5 ABI break in std::string
+    - install-openexr:
+        build: ubuntu-16.04-gcc4.8
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  linux-nondeprecated:
+    executor: ubuntu-18_04
+    environment:
+      # STUPID yml interprets unquoted OFF as a boolean
+      BUILD_DEPRECATED: "OFF"
+      CMAKE_CXX_FLAGS: -DCORRADE_NO_ASSERT
+      CONFIGURATION: Release
+      # Requires CMake 3.15, this job uses 3.5. Applies to PlutoSVG too.
+      WITH_LUNASVGIMPORTER: "OFF"
+    steps:
+    # libidn11 needed by CMake
+    - install-base-linux:
+        extra: libidn11 libfaad-dev libfreetype6-dev libjpeg-dev libopenal-dev libpng-dev libdevil-dev libharfbuzz-dev libassimp-dev libwebp-dev libzstd-dev ocl-icd-opencl-dev pocl-opencl-icd wget unzip
+    # Crashes or gets stuck with the default setting, only on GCC. 24 is not
+    # enough.
+    - cap-ninja-jobs:
+        count: 20
+    - install-gcc-4_8
+    - install-cmake:
+        version: "3.5.2"
+    - install-basis
+    - install-meshoptimizer
+    - install-libspng
+    # These two are in repos only since 20.04, but even then would probably hit
+    # the GCC 4.8 / 5 ABI break in std::string, so keeping our own builds
+    - install-glslang:
+        build: ubuntu-16.04-gcc4.8
+    - install-spirv-tools:
+        build: ubuntu-16.04-gcc4.8
+    # Can't use libopenexr-dev because of GCC 4.8 / 5 ABI break in std::string
+    - install-openexr:
+        build: ubuntu-16.04-gcc4.8
+    - build:
+        script: unix-desktop.sh
+
+  linux-sanitizers:
+    executor: ubuntu-18_04
+    environment:
+      CMAKE_CXX_FLAGS: -fsanitize=address
+      CONFIGURATION: Debug
+      # Basis, or the OpenCL ICD loader, or PoCL cause sanitizer errors when
+      # encoding with OpenCL. We're not installing any OpenCL packages, but
+      # better to be sure in case the image comes with it.
+      DISABLE_OPENCL: "ON"
+      # Requires CMake 3.15, this job uses 3.5. Applies to PlutoSVG too.
+      WITH_LUNASVGIMPORTER: "OFF"
+    steps:
+    # libidn11 needed by CMake
+    - install-base-linux:
+        extra: libidn11 libfaad-dev libfreetype6-dev libjpeg-dev libopenal-dev libpng-dev libdevil-dev libharfbuzz-dev libassimp-dev libwebp-dev libzstd-dev wget unzip
+    - install-clang
+    - install-cmake:
+        version: "3.5.2"
+    - install-basis
+    - install-meshoptimizer
+    - install-libspng
+    # These two are in repos only since 20.04
+    - install-glslang:
+        build: ubuntu-16.04-gcc5
+    - install-spirv-tools:
+        build: ubuntu-16.04-gcc5
+    # Even though Clang 3.8 is able to work with libopenexr-dev, the version
+    # 2.2 present in the 18.04 repos leaks like crazy, which is in direct
+    # conflict to what this job is trying to test for. The only job that
+    # actually runs against libopenexr-dev (and thus verifies compatibility
+    # with 2.2) is the ThreadSanitizer build below.
+    - install-openexr:
+        build: ubuntu-16.04-gcc5
+    - build:
+        script: unix-desktop.sh
+
+  # https://github.com/google/sanitizers/issues/1716 ; started happening on
+  # 2024-11-08 as CircleCI uses a base system with kernel 6.5 instead of 5.15
+  # for Docker images:
+  #   https://discuss.circleci.com/t/docker-executor-infrastructure-upgrade/52282
+  # This manifests when running corrade-rc already:
+  #   ThreadSanitizer: unexpected memory mapping 0x7e2f226ae000-0x7e2f22b00000
+  # Unfortunately, with Docker images, none of the suggested
+  #   sysctl vm.mmap_rnd_bits=28
+  #   echo 0 | tee /proc/sys/kernel/randomize_va_space
+  # works, complaining about read-only filesystem. The only way to set those is
+  # with a real VM instead of Docker, which is what's done here. It also means
+  # it's not possible to test on 18.04 anymore as those VMs are no longer
+  # provided.
+  linux-threadsanitizer:
+    executor: ubuntu-20_04
+    environment:
+      CMAKE_CXX_FLAGS: -fsanitize=thread
+      CONFIGURATION: Debug
+      # See linux-sanitizers for why this is necessary
+      DISABLE_OPENCL: "ON"
+      # Requires CMake 3.15, this job has 3.16. Applies to PlutoSVG too.
+      WITH_LUNASVGIMPORTER: "ON"
+    steps:
+    - install-base-linux:
+        extra: cmake libfaad-dev libfreetype6-dev libjpeg-dev libopenal-dev libpng-dev libdevil-dev libharfbuzz-dev libassimp-dev libopenexr-dev libwebp-dev libzstd-dev wget unzip
+        sudo: sudo
+    - install-clang:
+        sudo: sudo
+        symbolizer-link: false
+    - install-basis
+    - install-meshoptimizer
+    - install-libspng
+    - install-lunasvg
+    - install-plutosvg
+    # These two are in repos only since 20.04
+    - install-glslang:
+        build: ubuntu-16.04-gcc5
+    - install-spirv-tools:
+        build: ubuntu-16.04-gcc5
+    - run:
+        # Right now (2025-01-17) it's already set to 28 so nothing needs to be
+        # changed. This is for the future when it may break again, and yes,
+        # setting it explicitly to 32 causes the above error again.
+        name: Ensure ASLR is compatible with ThreadSanitizer
+        command: |
+          sudo sysctl vm.mmap_rnd_bits
+          sudo sysctl vm.mmap_rnd_bits=28
+    - build:
+        script: unix-desktop.sh
+
+  macos:
+    executor: xcode-13_4
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      CONFIGURATION: Debug
+      DISABLE_OPENCL: "ON"
+      # Applies to PlutoSVG too
+      WITH_LUNASVGIMPORTER: "ON"
+    steps:
+    - install-base-macos:
+        extra: faad2 harfbuzz assimp devil spirv-tools glslang openexr webp wget zstd libspng
+    - install-basis
+    - install-meshoptimizer
+    - install-lunasvg
+    - install-plutosvg
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  macos-static:
+    executor: xcode-13_4
+    environment:
+      # STUPID yml interprets unquoted ON as a boolean
+      BUILD_STATIC: "ON"
+      CMAKE_CXX_FLAGS: --coverage
+      CONFIGURATION: Debug
+      # Applies to PlutoSVG too
+      WITH_LUNASVGIMPORTER: "ON"
+    steps:
+    - install-base-macos:
+        extra: faad2 harfbuzz assimp devil spirv-tools glslang openexr webp wget zstd libspng
+    - install-basis:
+        tag: "1.16.4"
+    - install-meshoptimizer
+    - install-lunasvg
+    - install-plutosvg
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  emscripten1:
+    executor: emscripten1
+    steps:
+    - install-base-linux
+    # With a Debug build, 38 is causing OOMs. Release was fine with that.
+    - cap-ninja-jobs
+    # Zstd built inside emscripten.sh
+    - install-basis
+    - build:
+        script: emscripten.sh
+
+  emscripten2:
+    executor: emscripten2
+    environment:
+      # emsdk forces the PATH to prefer its own nodejs, so explicitly force
+      # /usr/bin/node to be used by CMake
+      EXTRA_OPTS: >
+        -DNODEJS_EXECUTABLE=/usr/bin/node
+    steps:
+    - install-base-linux:
+        extra: curl
+    # With a Debug build, 16+ is causing OOMs. Release was fine with that.
+    - cap-ninja-jobs:
+        count: 8
+    - install-nodejs
+    # Zstd built inside emscripten.sh
+    - install-basis
+    - build:
+        script: emscripten.sh
+
+  android-x86:
+    executor: android-29
+    steps:
+    - install-base-android
+    # CMake older than 3.20 doesn't work with NDK r22+ which removed some
+    # deprecated paths. NDK r21 is only on deprecated CircleCI Android images
+    # now.
+    - install-cmake:
+        version: "3.20.6"
+        suffix: linux
+        sudo: sudo
+    # Zstd built inside android-x86.sh
+    - install-basis
+    - build:
+        script: android-x86.sh
+
+  ios:
+    executor: xcode-13_4
+    environment:
+      # Yep, xcodebuild is beyond stupid and just DOESN'T build in parallel by
+      # default. The default medium resource class has 4 CPUs and Ninja uses
+      # -j6, so do the same for xcodebuild.
+      XCODE_JOBS: 6
+    steps:
+    - install-base-macos:
+        extra: xcbeautify wget
+    # Zstd built inside ios-simulator.sh
+    - install-basis
+    - build:
+        script: ios-simulator.sh
+
+workflows:
+  version: 2
+  build:
+    # While there's no actual execution or data dependency between the jobs,
+    # this is done in order to reduce unnecessary credit usage. The base and
+    # non-deprecated Linux builds are taken as the main sanity checks. Only
+    # if they pass, the rest of the jobs gets gradually executed, with further
+    # dependencies especially for the macOS jobs that take the most credits.
+    jobs:
+    - linux
+    - linux-nondeprecated
+    - linux-arm64:
+        requires:
+        - linux
+        - linux-nondeprecated
+    - linux-static:
+        requires:
+        - linux
+        - linux-nondeprecated
+    - linux-sanitizers:
+        requires:
+        - linux
+        - linux-nondeprecated
+    - linux-threadsanitizer:
+        requires:
+        - linux-sanitizers
+    - macos:
+        requires:
+        - linux
+        - linux-arm64
+        - linux-nondeprecated
+    - macos-static:
+        requires:
+        - macos
+        - linux-static
+    - emscripten1:
+        requires:
+        - linux-static
+    - emscripten2:
+        requires:
+        - linux-static
+    - android-x86:
+        requires:
+        - linux-static
+        - linux-arm64
+    - ios:
+        requires:
+        - macos-static

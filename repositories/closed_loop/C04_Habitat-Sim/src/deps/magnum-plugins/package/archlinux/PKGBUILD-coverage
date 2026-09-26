@@ -1,0 +1,112 @@
+# Author: mosra <mosra@centrum.cz>
+pkgname=magnum-plugins
+pkgver=dev
+pkgrel=1
+pkgdesc="Plugins for the Magnum C++11/C++14 graphics engine (coverage build)"
+arch=('i686' 'x86_64')
+url="https://magnum.graphics"
+license=('MIT')
+depends=('magnum' 'devil' 'faad2' 'freetype2' 'harfbuzz' 'libjpeg' 'libpng' 'meshoptimizer' 'openexr' 'spirv-tools' 'glslang' 'zstd' 'libwebp' 'libspng' 'resvg' 'lunasvg' 'plutosvg')
+makedepends=('cmake' 'ninja' 'lcov' 'basis-universal-src')
+options=(!strip)
+provides=('magnum-plugins-git')
+
+_rootdir=$startdir/../../
+
+build() {
+    mkdir -p "$_rootdir/build-coverage"
+    cd "$_rootdir/build-coverage"
+
+    # Disable optimization (saves A LOT of compilation time)
+    newcxxflags=$(echo $CXXFLAGS | sed s/-O.//g | sed s/-D_FORTIFY_SOURCE=.//g)
+    export CXXFLAGS="$newcxxflags"
+
+    # -fprofile-update=atomic is needed so lcov doesn't get negative counts
+    # in stb_image.h (probably caused by running some parts of the test
+    # multi-threaded).
+    #
+    # Colored output is enabled implicitly. If Ninja detects it's outputting to
+    # a pipe, it strips it away from the output, alternatively you can set the
+    # GCC_COLORS= (empty) env variable to temporarily disable colors. The
+    # inverse, i.e. preserving colors when Ninja outputs to a pipe can be done
+    # with CLICOLOR_FORCE=1: https://github.com/ninja-build/ninja/issues/2196
+    cmake .. \
+        -DCMAKE_CXX_FLAGS="--coverage -fprofile-update=atomic" \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_COLOR_DIAGNOSTICS=ON \
+        -DBASIS_UNIVERSAL_DIR=/opt/basis-universal \
+        -DMAGNUM_BUILD_TESTS=ON \
+        -DMAGNUM_BUILD_GL_TESTS=ON \
+        -DMAGNUM_WITH_ASSIMPIMPORTER=ON \
+        -DMAGNUM_WITH_ASTCIMPORTER=ON \
+        -DMAGNUM_WITH_BASISIMPORTER=ON \
+        -DMAGNUM_WITH_BASISIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_BCDECIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_CGLTFIMPORTER=ON \
+        -DMAGNUM_WITH_DDSIMPORTER=ON \
+        -DMAGNUM_WITH_DEVILIMAGEIMPORTER=ON \
+        -DMAGNUM_WITH_DRFLACAUDIOIMPORTER=ON \
+        -DMAGNUM_WITH_DRMP3AUDIOIMPORTER=ON \
+        -DMAGNUM_WITH_DRWAVAUDIOIMPORTER=ON \
+        -DMAGNUM_WITH_ETCDECIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_FAAD2AUDIOIMPORTER=ON \
+        -DMAGNUM_WITH_FREETYPEFONT=ON \
+        -DMAGNUM_WITH_GLSLANGSHADERCONVERTER=ON \
+        -DMAGNUM_WITH_GLTFIMPORTER=ON \
+        -DMAGNUM_WITH_GLTFSCENECONVERTER=ON \
+        -DMAGNUM_WITH_HARFBUZZFONT=ON \
+        -DMAGNUM_WITH_ICOIMPORTER=ON \
+        -DMAGNUM_WITH_JPEGIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_JPEGIMPORTER=ON \
+        -DMAGNUM_WITH_KTXIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_KTXIMPORTER=ON \
+        -DMAGNUM_WITH_LUNASVGIMPORTER=ON \
+        -DMAGNUM_WITH_MESHOPTIMIZERSCENECONVERTER=ON \
+        -DMAGNUM_WITH_MINIEXRIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_OPENEXRIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_OPENEXRIMPORTER=ON \
+        -DMAGNUM_WITH_OPENGEXIMPORTER=ON \
+        -DMAGNUM_WITH_PLUTOSVGIMPORTER=ON \
+        -DMAGNUM_WITH_PNGIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_PNGIMPORTER=ON \
+        -DMAGNUM_WITH_PRIMITIVEIMPORTER=ON \
+        -DMAGNUM_WITH_RESVGIMPORTER=ON \
+        -DMAGNUM_WITH_SPIRVTOOLSSHADERCONVERTER=ON \
+        -DMAGNUM_WITH_SPNGIMPORTER=ON \
+        -DMAGNUM_WITH_STANFORDIMPORTER=ON \
+        -DMAGNUM_WITH_STANFORDSCENECONVERTER=ON \
+        -DMAGNUM_WITH_STBDXTIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_STBIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_STBIMAGEIMPORTER=ON \
+        -DMAGNUM_WITH_STBRESIZEIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_STBTRUETYPEFONT=ON \
+        -DMAGNUM_WITH_STBVORBISAUDIOIMPORTER=ON \
+        -DMAGNUM_WITH_STLIMPORTER=ON \
+        -DMAGNUM_WITH_TINYGLTFIMPORTER=ON \
+        -DMAGNUM_WITH_UFBXIMPORTER=ON \
+        -DMAGNUM_WITH_WEBPIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_WEBPIMPORTER=ON \
+        -G Ninja
+    ninja
+}
+
+check() {
+    cd "$_rootdir/build-coverage"
+    CORRADE_TEST_COLOR=ON ctest --output-on-failure -j9 || true
+
+    rm -rf coverage
+    mkdir coverage
+    # Keep in sync with circleci.yml and appveyor-desktop{,-mingw}.bat, please
+    # TODO figure out a way to avoid adding --ignore-errors mismatch
+    lcov --ignore-errors mismatch,inconsistent --directory . --capture --output-file coverage.info
+    lcov --ignore-errors inconsistent --extract coverage.info "*/src/*" --output-file coverage.info
+    lcov --ignore-errors inconsistent --remove coverage.info "*/src/external/*" --output-file coverage.info
+    lcov --ignore-errors inconsistent --remove coverage.info "*/src/MagnumExternal/*" --output-file coverage.info
+    lcov --ignore-errors inconsistent --remove coverage.info "*/Test/*" --output-file coverage.info
+    genhtml --no-function-coverage --missed --output-directory ./coverage coverage.info
+}
+
+package() {
+    echo "Open file://$_rootdir/build-coverage/coverage/index.html to see the results." && false
+}

@@ -1,0 +1,579 @@
+{
+    "asset": {
+        "version": "2.0"
+    },
+    "meshes": [
+        {
+            "name": "invalid primitive",
+            "primitives": [
+                {
+                    "mode": 666,
+                    "attributes": {}
+                }
+            ]
+        },
+        {
+            "name": "different vertex count for each accessor",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 0,
+                        "TEXCOORD_0": 1
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unexpected position type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 2
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unsupported position component type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 3
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unexpected normal type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 2
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unsupported normal component type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 3
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unexpected tangent type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TANGENT": 0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unsupported tangent component type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TANGENT": 5
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unexpected texcoord type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TEXCOORD_0": 3
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unsupported texcoord component type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "TEXCOORD_0": 4
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unexpected color type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 1
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unsupported color component type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 5
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unexpected joints type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "JOINTS_0": 0
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unsupported joints component type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "JOINTS_0": 5
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unexpected weights type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "WEIGHTS_0": 7
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unsupported weights component type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "WEIGHTS_0": 5
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unexpected object id type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "_OBJECT_ID": 6
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unsupported object id component type",
+            "primitives": [
+                {
+                    "attributes": {
+                        "_OBJECT_ID": 7
+                    }
+                }
+            ]
+        },
+        {
+            "name": "unexpected index type",
+            "primitives": [
+                {
+                    "attributes": {},
+                    "indices": 6
+                }
+            ]
+        },
+        {
+            "name": "unsupported index component type",
+            "primitives": [
+                {
+                    "attributes": {},
+                    "indices": 7
+                }
+            ]
+        },
+        {
+            "name": "normalized index type",
+            "primitives": [
+                {
+                    "attributes": {},
+                    "indices": 8
+                }
+            ]
+        },
+        {
+            "name": "strided index view",
+            "primitives": [
+                {
+                    "attributes": {},
+                    "indices": 9
+                }
+            ]
+        },
+        {
+            "name": "accessor type size larger than buffer stride",
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 10
+                    }
+                }
+            ]
+        },
+        {
+            "name": "normalized float",
+            "primitives": [
+                {
+                    "attributes": {
+                        "_THING": 11
+                    }
+                }
+            ]
+        },
+        {
+            "name": "normalized double",
+            "primitives": [
+                {
+                    "attributes": {
+                        "_THING": 12
+                    }
+                }
+            ]
+        },
+        {
+            "name": "non-normalized byte matrix",
+            "primitives": [
+                {
+                    "attributes": {
+                        "_THING": 13
+                    }
+                }
+            ]
+        },
+        {
+            "name": "sparse accessor",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 14
+                    }
+                }
+            ]
+        },
+        {
+            "name": "no bufferview",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 15
+                    }
+                }
+            ]
+        },
+        {
+            "name": "multiple buffers",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 0,
+                        "TEXCOORD_0": 16
+                    }
+                }
+            ]
+        },
+        {
+            "name": "invalid index accessor",
+            "primitives": [
+                {
+                    "attributes": {},
+                    "indices": 17
+                }
+            ]
+        },
+        {
+            "name": "accessor range out of range",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 18
+                    }
+                }
+            ]
+        },
+        {
+            "name": "buffer view range out of range",
+            "primitives": [
+                {
+                    "attributes": {},
+                    "indices": 19
+                }
+            ]
+        },
+        {
+            "name": "normalized int",
+            "primitives": [
+                {
+                    "attributes": {
+                        "_THING": 20
+                    }
+                }
+            ]
+        },
+        {
+            "name": "buffer index out of range",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 21
+                    }
+                }
+            ]
+        },
+        {
+            "name": "buffer view index out of range",
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 22
+                    }
+                }
+            ]
+        },
+        {
+            "name": "accessor index out of range",
+            "primitives": [
+                {
+                    "attributes": {
+                        "NORMAL": 23
+                    }
+                }
+            ]
+        }
+    ],
+    "accessors": [
+        {
+            "name": "0",
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 3,
+            "type": "VEC3"
+        },
+        {
+            "name": "1",
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 4,
+            "type": "VEC2"
+        },
+        {
+            "name": "2",
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 3,
+            "type": "VEC2"
+        },
+        {
+            "name": "3",
+            "bufferView": 1,
+            "componentType": 5125,
+            "count": 1,
+            "type": "VEC3"
+        },
+        {
+            "name": "4",
+            "bufferView": 0,
+            "componentType": 5125,
+            "count": 3,
+            "type": "VEC2"
+        },
+        {
+            "name": "5",
+            "bufferView": 0,
+            "componentType": 5120,
+            "count": 3,
+            "type": "VEC4"
+        },
+        {
+            "name": "6",
+            "bufferView": 1,
+            "componentType": 5125,
+            "count": 3,
+            "type": "VEC2"
+        },
+        {
+            "name": "7",
+            "bufferView": 1,
+            "componentType": 5122,
+            "count": 3,
+            "type": "SCALAR"
+        },
+        {
+            "name": "8",
+            "bufferView": 1,
+            "componentType": 5125,
+            "normalized": true,
+            "count": 3,
+            "type": "SCALAR"
+        },
+        {
+            "name": "9",
+            "bufferView": 0,
+            "componentType": 5125,
+            "count": 3,
+            "type": "SCALAR"
+        },
+        {
+            "name": "10",
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 2,
+            "type": "VEC4"
+        },
+        {
+            "name": "11",
+            "bufferView": 0,
+            "componentType": 5126,
+            "normalized": true,
+            "count": 1,
+            "type": "SCALAR"
+        },
+        {
+            "name": "12",
+            "bufferView": 0,
+            "componentType": 5130,
+            "normalized": true,
+            "count": 1,
+            "type": "SCALAR"
+        },
+        {
+            "name": "13",
+            "bufferView": 1,
+            "componentType": 5120,
+            "normalized": false,
+            "count": 1,
+            "type": "MAT2"
+        },
+        {
+            "name": "14",
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 1,
+            "type": "VEC3",
+            "sparse": {
+                "count": 1,
+                "indices": {
+                    "bufferView": 1,
+                    "componentType": 5123
+                },
+                "values": {
+                    "bufferView": 0
+                }
+            }
+        },
+        {
+            "name": "15",
+            "componentType": 5126,
+            "count": 1,
+            "type": "VEC3"
+        },
+        {
+            "name": "16",
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 3,
+            "type": "VEC2"
+        },
+        {
+            "name": "17",
+            "bufferView": 0,
+            "componentType": 5125,
+            "count": 4,
+            "type": "SCALAR"
+        },
+        {
+            "name": "18",
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 4,
+            "type": "VEC3"
+        },
+        {
+            "name": "19",
+            "bufferView": 3,
+            "componentType": 5126,
+            "count": 3,
+            "type": "VEC3"
+        },
+        {
+            "name": "20",
+            "bufferView": 0,
+            "componentType": 5125,
+            "normalized": true,
+            "count": 1,
+            "type": "SCALAR"
+        },
+        {
+            "name": "21",
+            "bufferView": 4,
+            "componentType": 5126,
+            "count": 3,
+            "type": "VEC3"
+        },
+        {
+            "name": "22",
+            "bufferView": 5,
+            "componentType": 5126,
+            "count": 9,
+            "type": "VEC3"
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteOffset": 0,
+            "byteLength": 36,
+            "byteStride": 12
+        },
+        {
+            "buffer": 0,
+            "byteOffset": 36,
+            "byteLength": 32
+        },
+        {
+            "buffer": 1,
+            "byteOffset": 0,
+            "byteLength": 24
+        },
+        {
+            "buffer": 1,
+            "byteOffset": 20,
+            "byteLength": 40
+        },
+        {
+            "buffer": 2,
+            "byteLength": 36,
+            "byteStride": 12
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 68,
+            "comment": "base64.b64encode(bytes(68))",
+            "uri": "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+        },
+        {
+            "byteLength": 59,
+            "comment": "base64.b64encode(bytes(59))",
+            "uri": "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+        }
+    ]
+}

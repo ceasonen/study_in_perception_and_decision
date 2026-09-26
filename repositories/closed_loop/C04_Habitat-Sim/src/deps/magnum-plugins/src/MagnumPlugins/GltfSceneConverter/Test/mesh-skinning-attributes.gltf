@@ -1,0 +1,93 @@
+{
+  "asset": {
+    "version": "2.0"
+  },
+  "buffers": [
+    {
+      "uri": "mesh-skinning-attributes.bin",
+      "byteLength": 96
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 96,
+      "byteStride": 48,
+      "target": 34962
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5123,
+      "count": 2,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 8,
+      "componentType": 5126,
+      "count": 2,
+      "type": "VEC3",
+      "min": [1, 2, 3],
+      "max": [4, 5, 6]
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 20,
+      "componentType": 5121,
+      "normalized": true,
+      "count": 2,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 24,
+      "componentType": 5123,
+      "normalized": true,
+      "count": 2,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 32,
+      "componentType": 5123,
+      "normalized": true,
+      "count": 2,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 40,
+      "componentType": 5121,
+      "count": 2,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 44,
+      "componentType": 5121,
+      "count": 2,
+      "type": "VEC4"
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "JOINTS_0": 0,
+            "POSITION": 1,
+            "WEIGHTS_0": 2,
+            "WEIGHTS_1": 3,
+            "WEIGHTS_2": 4,
+            "JOINTS_1": 5,
+            "JOINTS_2": 6
+          },
+          "mode": 1
+        }
+      ]
+    }
+  ]
+}

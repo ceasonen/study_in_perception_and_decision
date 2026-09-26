@@ -1,0 +1,166 @@
+{
+  "asset": {
+    "version": "2.0"
+  },
+  "nodes": [
+    {
+      "note": "not part of any scene, but still has the names registered",
+      "extras": {
+        "registeredButNotInAnyScene": 3
+      }
+    },
+    {
+      "name": "no extras property"
+    },
+    {
+      "name": "extras not an object",
+      "extras": []
+    },
+    {
+      "name": "ignored types",
+      "note": "none of these will have their names registered",
+      "extras": {
+        "invalidNullField": null,
+        "invalidHeterogeneousArrayField": [3, 17, "hey", 26]
+      }
+    },
+    {
+      "name": "empty extras",
+      "extras": {}
+    },
+    {
+      "note": "duplicate keys are turned into multiple occurences of the same field because that's the zero-effort way to handle those; and they won't get marked as MultiEntry that way",
+      "extras": {
+        "radius": 5.25,
+        "offset": 17,
+        "UppercaseName": -56,
+        "offset": -22,
+        "visible": true,
+        "category": "duplicated",
+        "alias": "different string field data should't get mixed together",
+        "category": "very",
+        "radius": 3.5,
+        "nested": {
+          "range": {
+            "min": 15.5,
+            "max": 37,
+            "min": 0
+          },
+          "object": true
+        }
+      }
+    },
+    {
+      "name": "array values",
+      "note": "duplicate keys are just turned into longer arrays; MultiEntry is added even for arrays with just a single item",
+      "extras": {
+          "floatArray": [1.5, 2.25, 3.125],
+          "unsignedArray": [26, 78, 22],
+          "intArray": [-5],
+          "boolArray": [false, true],
+          "stringArray": ["yes", "ultimately", "actually"],
+          "floatArray": [15.2, 16.1],
+          "nested": {
+            "offsetArray": [15, 37]
+          }
+      }
+    },
+    {
+      "name": "invalid values",
+      "note": "the offset and flags fail only because they're set to be parsed as Int and UnsignedInt, respectively; category is then supposed to be a string, visible a bool and offset a number; nested.range.min is meant to be a float, nested.offsetArray is meant to be ints",
+      "extras": {
+        "radius": 56.0f,
+        "offset": 23.5,
+        "category": 155,
+        "flags": -1,
+        "visible": 0,
+        "offset": "none",
+        "nested": {
+          "range": {
+            "min": "inf"
+          },
+          "offsetArray": [15.5, 37]
+        }
+      }
+    },
+    {
+      "name": "aliased nested object keys",
+      "note": "currently if a field is sometimes an object and sometimes a scalar / array, it's not treated as an error and both get imported",
+      "extras": {
+        "nested": {
+          "range": [10, 15],
+          "offsetArray": {
+            "x": 566
+          }
+        }
+      }
+    },
+    {
+      "name": "invalid array values",
+      "note": "non-matching types, non-array fields that are arrays, array fields that are no longer arrays; nested.offsetArray is meant to be an array too",
+      "extras": {
+        "floatArray": ["this", "isn't", "a float"],
+        "stringArray": ["not", false, "homogeneous", null, "type"],
+        "intArray": [3.14],
+        "unsignedArray": [-15, 33],
+        "boolArray": [[], [], []],
+        "radius": [14.5, 0.3],
+        "floatArray": 15.6,
+        "nested": {
+          "offsetArray": 15
+        }
+      }
+    },
+    {
+      "name": "empty array values",
+      "note": "since an empty array would add precisely 0 fields to the scene even if we knew its concrete type, it doesn't make sense to warn about it",
+      "extras": {
+        "emptyArray": [],
+        "radius": []
+      }
+    },
+    {
+      "note": "to verify the 32-bit precision doesn't get lost along the way",
+      "extras": {
+        "visible": false,
+        "offset": -2147483648,
+        "intArray": [-2147483648, 2147483647]
+      }
+    },
+    {
+      "extras": {
+        "radius": 0.5,
+        "visible": true,
+        "alias": "seriously, not mixed",
+        "category": "noteless",
+        "nested": {
+          "range": {
+            "max": 5.51
+          }
+        }
+      }
+    },
+    {
+      "note": "to verify the 32-bit precision doesn't get lost along the way",
+      "extras": {
+        "radius": 5.5,
+        "visible": false,
+        "category": "positive",
+        "flags": 4294967295,
+        "unsignedArray": [0, 4294967295],
+        "nested": {
+          "object": true
+        }
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    },
+    {
+      "note": "fields get specified in order of node discovery",
+      "nodes": [13, 12]
+    }
+  ]
+}

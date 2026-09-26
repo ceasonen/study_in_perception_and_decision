@@ -1,0 +1,343 @@
+/*
+    This file is part of Magnum.
+
+    Copyright © 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+                2020, 2021, 2022, 2023, 2024, 2025
+              Vladimír Vondruš <mosra@centrum.cz>
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+*/
+
+namespace Magnum {
+/** @page platform Platform support
+@brief Integration into windowing toolkits and creation of windowless contexts.
+
+@tableofcontents
+@m_footernavigation
+
+The @ref Platform namespace contains `*Application` classes integrating Magnum
+into various toolkits, both windowed and windowless. Each class has slightly
+different dependencies and platform requirements, see documentation of the
+@ref Platform namespace and particular `*Application` classes for more
+information about building and usage with CMake.
+
+The classes aim to provide a common API to achieve static polymorphism, which
+ultimately means you should be able to use different toolkits on different
+platforms by only changing an @cpp #include @ce and linking to a different
+library.
+
+@section platform-windowed Windowed applications
+
+Windowed applications provide a window, keyboard and pointer input handling.
+The most widely used toolkit is SDL2, which is implemented in
+@ref Platform::Sdl2Application. At the very least, provide an one-argument
+constructor and the @relativeref{Platform::Sdl2Application,drawEvent()}
+function. The class can be then used directly in @cpp main() @ce, but for
+convenience and portability to other toolkits and platforms it's better to use
+the @ref MAGNUM_SDL2APPLICATION_MAIN() macro. If just a single application
+header is included, the class is aliased to a @cpp Platform::Application @ce
+typedef and to a @cpp MAGNUM_APPLICATION_MAIN() @ce macro.
+
+Barebone application implementation which will just clear the window to dark
+blue color is shown in the following code listing.
+
+@note A fully contained base application along with CMake setup is available in
+    the `base` branch of the [Magnum Bootstrap](https://github.com/mosra/magnum-bootstrap)
+    repository.
+
+@snippet Platform.cpp windowed
+
+@subsection platform-windowed-pointer-events Handling mouse, touch and pen events
+
+All application implementations have a generalized pointer input that covers
+mouse, (multi-)touch and pen input in a single interface, exposed through
+@relativeref{Platform::Sdl2Application,pointerPressEvent()},
+@relativeref{Platform::Sdl2Application,pointerReleaseEvent()} and
+@relativeref{Platform::Sdl2Application,pointerMoveEvent()}. Override a subset
+based on the events you want to handle. Mouse input is present in every
+application, touch and pen support varies based on the underlying toolkit.
+
+To make the application touch- and pen-aware, all you need to do is treat
+@relativeref{Platform::Sdl2Application,Pointer::Finger} (and
+@relativeref{Platform::AndroidApplication,Pointer::Pen}) the same way as
+@relativeref{Platform::Sdl2Application,Pointer::MouseLeft}. The pointer types
+can be ORed into an enum set for a simpler check, as shown below. Additionally,
+pointer events report also secondary touches from multi-touch interfaces.
+Unless you specifically handle multi-touch gestures in the application, it
+makes sense to handle only primary touches, i.e. only the first pressed finger,
+with @relativeref{Platform::Sdl2Application,PointerEvent::isPrimary()}. Mouse
+and pen input is marked as primary always.
+
+@snippet Platform.cpp windowed-pointer-events
+
+In addition to the above generalized interface, there's
+@relativeref{Platform::Sdl2Application,scrollEvent()} providing 2D scroll
+events from a mouse wheel, trackball or touchpad.
+
+See @ref Platform-Sdl2Application-touch,
+@ref Platform-EmscriptenApplication-touch and
+@ref Platform-AndroidApplication-touch for additional tookit-specific
+information. A @ref Platform::TwoFingerGesture helper provides recognition of
+common two-finger gestures for zoom, rotation and pan.
+
+@subsection platform-windowed-key-events Attaching to keyboard and text input
+
+The @relativeref{Platform::Sdl2Application,keyPressEvent()} and
+@relativeref{Platform::Sdl2Application,keyReleaseEvent()} provide key input
+events, both a from a physical keyboard and a virtual one on touch-only
+devices. Apart from the @relativeref{Platform::Sdl2Application,Key} being
+pressed or released, they track information about which keyboard
+@relativeref{Platform::Sdl2Application,Modifiers} are pressed.
+
+For text input there's @relativeref{Platform::Sdl2Application,textInputEvent()},
+which has to be explicitly enabled with
+@relativeref{Platform::Sdl2Application,startTextInput()} and then disabled
+again with @relativeref{Platform::Sdl2Application,stopTextInput()}. The text
+input directly gives the application bits of UTF-8 text, matching current
+keyboard layout, system configuration and other platform-specific state.
+
+Key events are still fired even with text input enabled in order to be able to
+react to arrow keys for cursor movement, editing shortcuts and such. Key events
+* *should not* be used for getting actual typed characters, attempting to do so
+will never lead to a solution that works reliably on all platforms.
+
+@snippet Platform.cpp windowed-key-events
+
+For [IME](https://en.wikipedia.org/wiki/Input_method) and other advanced text
+editing, certain application implementations provide also a
+@relativeref{Platform::Sdl2Application,textEditingEvent()}.
+
+@section platform-windowed-configuration Specifying configuration
+
+By default the application is created with reasonable defaults (such as a
+window size of 800x600 pixels). Pass a
+@relativeref{Platform::Sdl2Application,Configuration} instance to the
+application constructor to modify those. Using method chaining it can be done
+conveniently like this:
+
+@snippet Platform.cpp windowed-configuration
+
+@subsection platform-windowed-viewport-events Responding to window size changes
+
+By default the application doesn't respond to window size changes in any way,
+and the window has a fixed size. To make the window resizable and properly
+respond to size changes, construct the application with
+@relativeref{Platform::Sdl2Application,Configuration::WindowFlag::Resizable}
+and override the @relativeref{Platform::Sdl2Application,viewportEvent()}
+function, where you pass the new size to the default framebuffer and where else
+is appropriate:
+
+@snippet Platform.cpp windowed-viewport-events
+
+@section platform-windowless Windowless applications
+
+Windowless applications provide just a context for offscreen rendering or for
+performing tasks on a GPU. For OpenGL there is no platform-independent toolkit
+which could handle this in portable way, thus you have to use platform-specific
+implementations. Magnum provides windowless applications for GLX and EGL on
+Unix, CGL on macOS and WGL or EGL on Windows. To make things simple, as an
+example we will use only @ref Platform::WindowlessEglApplication, below is a
+link to a bootstrap application for a fully cross-platform example.
+
+You need to implement just the
+@relativeref{Platform::WindowlessEglApplication,exec()} function. The class can
+be then used directly in @cpp main() @ce, but again, for convenience and
+portability it's better to use the @ref MAGNUM_WINDOWLESSEGLAPPLICATION_MAIN()
+macro.
+
+Similarly as with windowed applications, if just a single windowless
+application header is included, the library provides a
+@cpp Platform::WindowlessApplication @ce typedef and a
+@cpp MAGNUM_WINDOWLESSAPPLICATION_MAIN() @ce macro. Changing the code to use
+a different toolkit is then again a matter of using a different
+@cpp #include @ce and linking to a different library. Aliases for windowless
+applications are separated from aliases for windowed applications, because
+projects commonly contain both graphics applications and helper command-line
+tools for data processing and such.
+
+A barebone application which will just print out the current OpenGL version and
+renderer string is in the following code listing.
+
+@note A fully contained windowless application using
+    @ref Platform::WindowlessCglApplication on macOS,
+    @ref Platform::WindowlessGlxApplication /
+    @ref Platform::WindowlessEglApplication on Unix and
+    @ref Platform::WindowlessWglApplication on Windows along with CMake setup
+    is available in the `windowless` branch of the
+    [Magnum Bootstrap](https://github.com/mosra/magnum-bootstrap) repository.
+
+@snippet Platform-windowless.cpp windowless
+
+@section platform-compilation Compilation with CMake
+
+Barebone compilation consists just of finding Magnum library with, for example,
+`Sdl2Application` component, compilation of the executable and linking
+`Magnum::Magnum` and `Magnum::Sdl2Application` to it.
+
+Again, to simplify porting, you can also use generic `Magnum::Application`
+aliases (or `Magnum::WindowlessApplication` for windowless applications), but
+only if only one application (windowless application) component is requested to
+avoid ambiguity. Changing the build script to use different toolkit is then
+matter of replacing only the requested `*Application` component (and one
+@cpp #include @ce line in the actual code, as said above).
+
+@code{.cmake}
+find_package(Magnum REQUIRED Sdl2Application)
+
+add_executable(myapplication MyApplication.cpp)
+target_link_libraries(myapplication
+    Magnum::Magnum
+    Magnum::Application)
+@endcode
+
+@section platform-configuration-delayed Delayed context creation
+
+Sometimes you may want to set up the application based on a configuration file
+or system introspection, which can't really be done inside the base class
+initializer. You can specify @ref NoCreate in the constructor instead and pass
+the @relativeref{Platform::Sdl2Application,Configuration} later to a
+@relativeref{Platform::Sdl2Application,create()} function:
+
+@snippet Platform.cpp createcontext
+
+If context creation in the constructor or in
+@relativeref{Platform::Sdl2Application,create()} fails, the application prints
+an error message to standard output and exits. While that frees you from having
+to do explicit error handling, sometimes a more graceful behavior may be
+desirable --- with @relativeref{Platform::Sdl2Application,tryCreate()} the
+function returns @cpp false @ce instead of exiting and it's up to you whether
+you abort the launch or retry with different configuration. You can for example
+try enabling MSAA first, and if the context creation fails, fall back to no-AA
+rendering:
+
+@snippet Platform.cpp trycreatecontext
+
+<b></b>
+
+@m_class{m-block m-warning}
+
+@par Implications for GL objects as class members
+    Delaying GL context creation to
+    @relativeref{Platform::Sdl2Application,create()} /
+    @relativeref{Platform::Sdl2Application,tryCreate()} means that, at the
+    point when class members get constructed, the context isn't available yet.
+    If you have GL objects such as @ref GL::Mesh or @ref Shaders::PhongGL as
+    class members, the application may hit the following assert during startup:
+@par
+    @code{.shell-session}
+    GL::Context::current(): no current context
+    @endcode
+@par
+    The solution is to construct the GL objects with @ref NoCreate constructors
+    as well and populate them with live instances only after the context has
+    been created. See @ref opengl-wrapping-instances-nocreate for more
+    information.
+
+@section platform-custom Using custom platform toolkits
+
+In case you want to use some not-yet-supported toolkit or you don't want to use
+the application wrappers in @ref Platform namespace, you can initialize Magnum
+manually. First create OpenGL context and then create instance of
+@ref Platform::GLContext class, which will take care of proper initialization
+and feature detection. The instance must be alive for whole application
+lifetime. Example @cpp main() @ce function with manual initialization is in the
+following code listing.
+
+@note A fully contained application with manual Magnum initialization on top of
+    the Qt toolkit is available in the
+    [base-qt5](https://github.com/mosra/magnum-bootstrap/tree/base-qt5) /
+    [base-qt6](https://github.com/mosra/magnum-bootstrap/tree/base-qt6)
+    branches of the Magnum Bootstrap repository. Similar project, but for
+    wxWidgets and gtkmm are in the
+    [base-wxwidgets](https://github.com/mosra/magnum-bootstrap/tree/base-wxwidgets)
+    and [base-gtkmm](https://github.com/mosra/magnum-bootstrap/tree/base-gtkmm)
+    branches.
+@note
+    There's also an example showing @ref examples-triangle-plain-glfw "usage of plain GLFW to render a basic triangle".
+
+@snippet Platform-custom.cpp custom
+
+@attention The @ref Platform::GLContext instance is bound to a single OpenGL
+    context, which must be always set as current when calling any Magnum APIs
+    touching OpenGL state.
+
+On majority of platforms the @ref Platform::GLContext class does GL function
+pointer loading using platform-specific APIs. In that case you also need to
+find particular `*Context` library, add its include dir and then link to it.
+These platform-specific libraries are available:
+
+-   `CglContext` --- CGL context (macOS)
+-   `EglContext` --- EGL context (everywhere except Emscripten)
+-   `GlxContext` --- GLX context (X11-based Unix)
+-   `WglContext` --- WGL context (Windows)
+
+Systems not listed here (such as Emscripten) don't need any `Context` library,
+because dynamic function pointer loading is not available on these.
+
+For example, when you create the OpenGL context using GLX, you need to find
+`GlxContext` component, and link to `Magnum::GlxContext` target. Similarly to
+application libraries, you can also use the generic `Magnum::GLContext` target,
+providing you requested only one `*Context` component in the
+@cmake find_package() @ce call. Complete example:
+
+@code{.cmake}
+find_package(Magnum REQUIRED GlxContext)
+
+add_executable(myapplication MyCustomApplication.cpp)
+target_link_libraries(myapplication
+    Magnum::Magnum
+    Magnum::GLContext)
+@endcode
+
+@section platform-windowless-contexts Manually managing windowless contexts
+
+In case you need to manage windowless OpenGL contexts manually (for example
+to use Magnum for data processing in a thread or when having more than one
+OpenGL context), there is a possibility to directly use the context wrappers
+from windowless applications. Each @ref Platform::WindowlessEglApplication "Platform::Windowless*Application"
+is accompanied by a @ref Platform::WindowlessEglContext "Platform::Windowless*Context"
+class that manages just GL context creation, making it current and destruction.
+Similarly to using custom platform toolkits above, the workflow is to first
+create a GL context instance, then making it current and finally instantiating
+the @ref Platform::GLContext instance to initialize Magnum.
+
+Similarly as with the applications, to simplify the porting, the library
+provides @cpp Platform::WindowlessGLContext @ce typedef, but only if just one
+windowless application header is included.
+
+@attention With this approach it is possible to switch between different GL
+    contexts, but make sure that Magnum is used only with its own OpenGL
+    context.
+
+@snippet Platform-windowless-custom.cpp custom
+
+The main purpose of windowless contexts is threaded OpenGL, used for example
+for background data processing. The workflow is to create the windowless
+context on the main thread, but make it current in the worker thread. This way
+the main thread state isn't affected so it can have any other GL context
+current (for example for the main application rendering). See
+@ref GL-Context-multithreading and @ref CORRADE_BUILD_MULTITHREADED for more
+information.
+
+@note Context creation is not thread safe on all platforms, that's why it still
+    has to be done on the main thread.
+
+@snippet Platform-windowless-thread.cpp thread
+*/
+}

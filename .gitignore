@@ -1,0 +1,11 @@
+# Local download archives and extracted metadata are redundant with the source/PDF library.
+/downloads/
+*.part
+__pycache__/
+.DS_Store
+.venv/
+# Training outputs, datasets and model checkpoints stay outside the learning repository.
+/datasets/
+/weights/
+/runs/
+/outputs/

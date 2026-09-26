@@ -1,0 +1,292 @@
+{
+  "asset": {
+    "version": "2.0"
+  },
+  "animations": [
+    {
+      "name": "empty",
+      "channels": [],
+      "samplers": []
+    },
+    {
+      "name": "empty TRS animation",
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 0,
+            "path": "rotation"
+          }
+        },
+        {
+          "sampler": 1,
+          "target": {
+            "node": 1,
+            "path": "translation"
+          }
+        },
+        {
+          "sampler": 2,
+          "target": {
+            "node": 2,
+            "path": "scale"
+          }
+        }
+      ],
+      "samplers": [
+        {
+          "input": 9,
+          "interpolation": "LINEAR",
+          "output": 11
+        },
+        {
+          "input": 9,
+          "interpolation": "STEP",
+          "output": 10
+        },
+        {
+          "input": 9,
+          "interpolation": "LINEAR",
+          "output": 10
+        }
+      ]
+    },
+    {
+      "name": "TRS animation",
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 0,
+            "path": "rotation"
+          }
+        },
+        {
+          "sampler": 1,
+          "target": {
+            "node": 1,
+            "path": "translation"
+          }
+        },
+        {
+          "sampler": 2,
+          "target": {
+            "node": 2,
+            "path": "scale"
+          }
+        }
+      ],
+      "samplers": [
+        {
+          "input": 0,
+          "interpolation": "LINEAR",
+          "output": 1
+        },
+        {
+          "input": 2,
+          "interpolation": "STEP",
+          "output": 3
+        },
+        {
+          "input": 2,
+          "interpolation": "LINEAR",
+          "output": 4
+        }
+      ]
+    },
+    {
+      "name": "TRS animation, splines",
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 3,
+            "path": "rotation"
+          }
+        },
+        {
+          "sampler": 1,
+          "target": {
+            "node": 4,
+            "path": "translation"
+          }
+        },
+        {
+          "sampler": 2,
+          "target": {
+            "node": 5,
+            "path": "scale"
+          }
+        }
+      ],
+      "samplers": [
+        {
+          "input": 5,
+          "interpolation": "CUBICSPLINE",
+          "output": 6
+        },
+        {
+          "input": 5,
+          "interpolation": "CUBICSPLINE",
+          "output": 7
+        },
+        {
+          "input": 5,
+          "interpolation": "CUBICSPLINE",
+          "output": 8
+        }
+      ]
+    }
+  ],
+  "accessors": [
+    {
+      "name": "0",
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 2,
+      "type": "SCALAR"
+    },
+    {
+      "name": "1",
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 2,
+      "type": "VEC4"
+    },
+    {
+      "name": "2",
+      "bufferView": 0,
+      "byteOffset": 8,
+      "componentType": 5126,
+      "count": 4,
+      "type": "SCALAR"
+    },
+    {
+      "name": "3",
+      "bufferView": 2,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 4,
+      "type": "VEC3"
+    },
+    {
+      "name": "4",
+      "bufferView": 2,
+      "byteOffset": 12,
+      "componentType": 5126,
+      "count": 4,
+      "type": "VEC3"
+    },
+    {
+      "name": "5",
+      "bufferView": 3,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 4,
+      "type": "SCALAR"
+    },
+    {
+      "name": "6",
+      "bufferView": 4,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 12,
+      "type": "VEC4"
+    },
+    {
+      "name": "7",
+      "bufferView": 5,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 12,
+      "type": "VEC3"
+    },
+    {
+      "name": "8",
+      "bufferView": 6,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 12,
+      "type": "VEC3"
+    },
+    {
+      "name": "9",
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 0,
+      "type": "SCALAR"
+    },
+    {
+      "name": "10",
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 0,
+      "type": "VEC3"
+    },
+    {
+      "name": "11",
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 0,
+      "type": "VEC4"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 24
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 24,
+      "byteLength": 32
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 56,
+      "byteLength": 96,
+      "byteStride": 24
+    },
+    {
+      "note": "Only the first 16 bytes get used, by accessor 3. The second 16 bytes are used only by animation-splines-sharing.gltf.",
+      "buffer": 0,
+      "byteOffset": 152,
+      "byteLength": 32
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 184,
+      "byteLength": 192
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 376,
+      "byteLength": 144
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 520,
+      "byteLength": 144
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 664,
+      "uri": "animation.bin"
+    }
+  ],
+  "nodes": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+  ]
+}

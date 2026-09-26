@@ -1,0 +1,8 @@
+type = "<II IIII I"
+input = [
+    0xaaaaaaaa, 0xbbbbbbbb,
+    0xffeeffee, 0xeeffeeff, 0xddeeddee, 0xeeddeedd,
+    0xcccccccc
+]
+
+# kate: hl python

@@ -1,0 +1,6 @@
+newmtl Material
+Kd 0.0 1.0 0.0
+
+newmtl Separate metalness and roughness
+map_Pr blue4x4.png
+map_Pm red2x2.png

@@ -1,0 +1,339 @@
+{
+  "checked_at": "2026-09-26T12:38:16+00:00",
+  "checks": "Presence, archive-member sizes, PDF parsing/page counts, code-entry paths, local links, nested Git paths, upload sizes. No hash verification.",
+  "repositories": [
+    {
+      "id": "P01",
+      "path": "repositories/perception/P01_DETR",
+      "files_in_main_archive": 43,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "P02",
+      "path": "repositories/perception/P02_DINOv2",
+      "files_in_main_archive": 203,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "P03",
+      "path": "repositories/perception/P03_DINOv3",
+      "files_in_main_archive": 221,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "P04",
+      "path": "repositories/perception/P04_ByteTrack",
+      "files_in_main_archive": 229,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "P05",
+      "path": "repositories/perception/P05_GlobalTrack",
+      "files_in_main_archive": 499,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "P06",
+      "path": "repositories/perception/P06_CSTrack",
+      "files_in_main_archive": 194,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "P07",
+      "path": "repositories/perception/P07_GroundingDINO",
+      "files_in_main_archive": 67,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "D01",
+      "path": "repositories/decision/D01_CleanRL",
+      "files_in_main_archive": 402,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "D02",
+      "path": "repositories/decision/D02_Stable-Baselines3",
+      "files_in_main_archive": 182,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "D03",
+      "path": "repositories/decision/D03_MAPPO",
+      "files_in_main_archive": 163,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "D04",
+      "path": "repositories/decision/D04_PyMARL",
+      "files_in_main_archive": 52,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "D05",
+      "path": "repositories/decision/D05_TAPE",
+      "files_in_main_archive": 318,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "D06",
+      "path": "repositories/decision/D06_MALib",
+      "files_in_main_archive": 238,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 1
+    },
+    {
+      "id": "C01",
+      "path": "repositories/closed_loop/C01_DrQ-v2",
+      "files_in_main_archive": 65,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "C02",
+      "path": "repositories/closed_loop/C02_DreamerV3",
+      "files_in_main_archive": 95,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "C03",
+      "path": "repositories/closed_loop/C03_Habitat-Lab",
+      "files_in_main_archive": 721,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "C04",
+      "path": "repositories/closed_loop/C04_Habitat-Sim",
+      "files_in_main_archive": 914,
+      "submodule_directories": 21,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "C05",
+      "path": "repositories/closed_loop/C05_ACT",
+      "files_in_main_archive": 48,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "C06",
+      "path": "repositories/closed_loop/C06_Diffusion-Policy",
+      "files_in_main_archive": 369,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "C07",
+      "path": "repositories/closed_loop/C07_CoS",
+      "files_in_main_archive": 138,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
+    },
+    {
+      "id": "C08",
+      "path": "repositories/closed_loop/C08_OpenPI",
+      "files_in_main_archive": 140,
+      "submodule_directories": 2,
+      "stale_submodule_declarations": 0
+    }
+  ],
+  "papers": [
+    {
+      "id": "human_machine",
+      "pages": 11,
+      "bytes": 6755537
+    },
+    {
+      "id": "resnet",
+      "pages": 12,
+      "bytes": 819383
+    },
+    {
+      "id": "vit",
+      "pages": 22,
+      "bytes": 3743814
+    },
+    {
+      "id": "detr",
+      "pages": 26,
+      "bytes": 7634041
+    },
+    {
+      "id": "dinov2",
+      "pages": 32,
+      "bytes": 8049044
+    },
+    {
+      "id": "dinov3",
+      "pages": 67,
+      "bytes": 15823906
+    },
+    {
+      "id": "bytetrack",
+      "pages": 14,
+      "bytes": 8638055
+    },
+    {
+      "id": "globaltrack",
+      "pages": 8,
+      "bytes": 1837678
+    },
+    {
+      "id": "cstrack",
+      "pages": 19,
+      "bytes": 5438292
+    },
+    {
+      "id": "groundingdino",
+      "pages": 33,
+      "bytes": 4329735
+    },
+    {
+      "id": "ppo",
+      "pages": 12,
+      "bytes": 2923532
+    },
+    {
+      "id": "sac",
+      "pages": 14,
+      "bytes": 4388102
+    },
+    {
+      "id": "cleanrl",
+      "pages": 18,
+      "bytes": 1612586
+    },
+    {
+      "id": "sb3",
+      "pages": 8,
+      "bytes": 249259
+    },
+    {
+      "id": "mappo",
+      "pages": 30,
+      "bytes": 16261854
+    },
+    {
+      "id": "qmix",
+      "pages": 14,
+      "bytes": 3808951
+    },
+    {
+      "id": "tape",
+      "pages": 16,
+      "bytes": 1615481
+    },
+    {
+      "id": "distributed_rl",
+      "pages": 14,
+      "bytes": 1413935
+    },
+    {
+      "id": "m2rl",
+      "pages": 4,
+      "bytes": 1027608
+    },
+    {
+      "id": "malib",
+      "pages": 12,
+      "bytes": 1425917
+    },
+    {
+      "id": "drqv2",
+      "pages": 18,
+      "bytes": 2385290
+    },
+    {
+      "id": "dreamerv3",
+      "pages": 40,
+      "bytes": 2874717
+    },
+    {
+      "id": "habitat",
+      "pages": 17,
+      "bytes": 6108339
+    },
+    {
+      "id": "habitat2",
+      "pages": 32,
+      "bytes": 45408472
+    },
+    {
+      "id": "act",
+      "pages": 18,
+      "bytes": 5353485
+    },
+    {
+      "id": "diffusion_policy",
+      "pages": 19,
+      "bytes": 6192199
+    },
+    {
+      "id": "cos",
+      "pages": 18,
+      "bytes": 975985
+    },
+    {
+      "id": "pi0",
+      "pages": 17,
+      "bytes": 7893845
+    },
+    {
+      "id": "pi05",
+      "pages": 19,
+      "bytes": 16213397
+    }
+  ],
+  "archive_files_checked": 25803,
+  "nested_git_count": 0,
+  "total_source_and_pdf_bytes": 1794701624,
+  "largest_files": [
+    {
+      "bytes": 97020784,
+      "path": "repositories/closed_loop/C08_OpenPI/third_party/aloha/aloha2/workcell_v2/Aloha workcell v2.stl"
+    },
+    {
+      "bytes": 45408472,
+      "path": "papers/closed_loop/habitat2.pdf"
+    },
+    {
+      "bytes": 41892324,
+      "path": "repositories/closed_loop/C03_Habitat-Lab/res/video/composite.mp4"
+    },
+    {
+      "bytes": 19909103,
+      "path": "repositories/perception/P04_ByteTrack/assets/MOT20-08.gif"
+    },
+    {
+      "bytes": 16261854,
+      "path": "papers/decision/mappo.pdf"
+    },
+    {
+      "bytes": 16213397,
+      "path": "papers/closed_loop/pi05.pdf"
+    },
+    {
+      "bytes": 15823906,
+      "path": "papers/perception/dinov3.pdf"
+    },
+    {
+      "bytes": 14080466,
+      "path": "repositories/closed_loop/C03_Habitat-Lab/res/img/habitat3.gif"
+    }
+  ],
+  "errors": [],
+  "limitations": "No environment installation, model training, GPU execution, or paper-result reproduction was performed."
+}

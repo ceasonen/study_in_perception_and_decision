@@ -1,0 +1,75 @@
+# Author: mosra <mosra@centrum.cz>
+pkgname=emscripten-magnum-integration
+pkgver=dev.wasm
+pkgrel=1
+pkgdesc="Integration libraries for the Magnum C++11/C++14 graphics engine (Emscripten, wasm)"
+arch=('any')
+url="https://magnum.graphics"
+license=('MIT')
+depends=('emscripten-magnum=dev.wasm' 'emscripten-bullet' 'imgui-src')
+makedepends=('cmake' 'emscripten' 'corrade' 'ninja' 'rsync')
+options=('!strip' '!buildflags')
+
+_rootdir=$startdir/../../
+
+prepare() {
+    # This is needed in order to fill ~/.emscripten_cache/sysroot/ with
+    # up-to-date dependency headers and libs. There's
+    #   embuilder build sysroot --force
+    # as suggested in https://github.com/emscripten-core/emscripten/pull/13090
+    # that does the same in a builtin way, but it DELIBERATELY does not
+    # preserve timestamps in any way, forcing a full rebuild every time. Why?!
+    #   https://github.com/emscripten-core/emscripten/blob/0566a76b500bd2bbd535e108f657fce1db7f6f75/tools/shared.py#L687
+    # Could use cp -rp instead of rsync if the system include dir didn't have
+    # that stupid designed-to-fail version.h :(
+    rsync -rlt /usr/lib/emscripten/system/include/ --exclude=emscripten/version.h $(em-config CACHE)/sysroot/include/
+}
+
+build() {
+    if [ ! -d "$_rootdir/build-emscripten-wasm" ] ; then
+        mkdir "$_rootdir/build-emscripten-wasm"
+        cd "$_rootdir/build-emscripten-wasm"
+
+        cmake .. \
+            -DCMAKE_TOOLCHAIN_FILE="$_rootdir/toolchains/generic/Emscripten-wasm.cmake" \
+            -G Ninja
+    fi
+
+    cd "$_rootdir/build-emscripten-wasm"
+
+    # Put tests into a separate target as they take ages to build. They're
+    # built only inside check() so `makepkg --nocheck` will skip building them.
+    #
+    # Colored output is enabled implicitly. If Ninja detects it's outputting to
+    # a pipe, it strips it away from the output; Clang unfortunately doesn't
+    # have any env var to temporarily disable colors. The inverse, i.e.
+    # preserving colors when Ninja outputs to a pipe can be done with
+    # CLICOLOR_FORCE=1: https://github.com/ninja-build/ninja/issues/2196
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr/lib/emscripten/system \
+        -DCMAKE_COLOR_DIAGNOSTICS=ON \
+        -DMAGNUM_DEPLOY_PREFIX=/srv/http/emscripten \
+        -DIMGUI_DIR=/opt/imgui \
+        -DMAGNUM_WITH_BULLET=ON \
+        -DMAGNUM_WITH_DART=OFF \
+        -DMAGNUM_WITH_GLM=OFF \
+        -DMAGNUM_WITH_IMGUI=ON \
+        -DMAGNUM_BUILD_TESTS=ON \
+        -DMAGNUM_BUILD_GL_TESTS=ON \
+        -DCORRADE_TESTSUITE_TEST_TARGET=build-tests
+    ninja
+}
+
+check() {
+    cd "$_rootdir/build-emscripten-wasm"
+
+    ninja build-tests
+
+    CORRADE_TEST_COLOR=ON ctest --output-on-failure -E GLTest
+}
+
+package() {
+    cd "$_rootdir/build-emscripten-wasm"
+    DESTDIR="$pkgdir/" ninja install
+}

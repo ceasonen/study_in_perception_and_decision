@@ -1,0 +1,85 @@
+/*
+    This file is part of Magnum.
+
+    Copyright © 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+                2020, 2021, 2022, 2023, 2024, 2025
+              Vladimír Vondruš <mosra@centrum.cz>
+    Copyright © 2022 Guillaume Jacquemin <williamjcm@users.noreply.github.com>
+    Copyright © 2023 Pablo Escobar <mail@rvrs.in>
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+*/
+
+namespace Magnum {
+/** @page debuggers Debugger support
+@brief Pretty-printers for Magnum types and other debugging aids
+@m_since_latest
+
+@section debuggers-gdb-pretty-printers GDB pretty printers
+
+The [src/debuggers/gdb](https://github.com/mosra/magnum/tree/master/src/debuggers/gdb)
+directory contains [GDB pretty printers](https://sourceware.org/gdb/onlinedocs/gdb/Pretty-Printing.html)
+for important types in the @ref Magnum and @ref Animation namespace and most
+@ref Math classes. Contents of this directory are also copied into
+@cb{.sh} ${CMAKE_INSTALL_PREFIX}/share/gdb/python @ce during installation,
+where the prefix is usually `/usr` or `/usr/local`.
+
+Easiest is to auto-load them on startup, by putting the following snippet into
+the user-specific `~/.gdbinit` or `~/.config/gdb/gdbinit` file:
+
+@code{.py}
+python
+# If not installing into /usr, you'll need to insert the install location (or
+# the src/debuggers/gdb/ directory inside Magnum sources) to Python's path:
+#import sys
+#sys.path.insert(0, '/magnum/install/prefix/share/gdb/python')
+from magnum import register_magnum_printers
+register_magnum_printers(gdb.current_objfile())
+end
+@endcode
+
+In case of MSYS2/MinGW, when running outside of the MSYS2 shell, you may need
+to put the file into @cb{.bat} %USERPROFILE%/.config/gdb/gdbinit @ce instead of
+@cb{.sh} $HOME/.gdbinit @ce.
+
+Alternatively, it's possible to load the scripts manually using GDB commands
+(basically, pasting contents the above snippet) or by executing a GDB script
+file using the @m_class{m-doc-external} [source](https://sourceware.org/gdb/onlinedocs/gdb/Command-Files.html#Command-Files)
+command. See also corresponding [GDB docs](https://sourceware.org/gdb/onlinedocs/gdb.html#Initialization-Files)
+and [CLion docs](https://www.jetbrains.com/help/clion/configuring-debugger-options.html#gdbinit-lldbinit)
+for more information.
+
+See also @ref corrade-debuggers-gdb-pretty-printers "Corrade GDB pretty printers".
+
+@section magnum-debuggers-natvis MSVC Natvis files
+
+The [src/debuggers/natvis](https://github.com/mosra/magnum/tree/master/src/debuggers/natvis)
+directory contains MSVC natvis files for important @ref Math classes. Contents
+of this directory are also copied into
+@cb{.sh} ${CMAKE_INSTALL_PREFIX}/share/magnum/debuggers/natvis @ce during
+installation.
+
+Easiest way to use is to copy them to the user-specific Natvis directory for
+given version of Visual Studio, such as @cb{.bat} %USERPROFILE%/Documents/Visual Studio 2022/Visualizers @ce.
+
+For more information consult the corresponding [Natvis docs](https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2022).
+
+See also @ref corrade-debuggers-natvis "Corrade MSVC Natvis files".
+*/
+}

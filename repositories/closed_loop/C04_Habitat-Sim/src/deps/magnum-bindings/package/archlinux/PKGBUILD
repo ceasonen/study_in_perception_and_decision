@@ -1,0 +1,65 @@
+# Author: mosra <mosra@centrum.cz>
+pkgname=magnum-bindings
+pkgver=dev
+pkgrel=1
+pkgdesc="C++11/C++14 graphics middleware for games and data visualization — bindings"
+arch=('i686' 'x86_64')
+url="https://magnum.graphics"
+license=('MIT')
+depends=('corrade' 'magnum' 'python')
+makedepends=('cmake' 'ninja' 'pybind11')
+options=(!buildflags)
+provides=('magnum-bindings-git')
+
+_rootdir=$startdir/../../
+
+_buildtype=Release
+# _buildtype=Debug
+
+build() {
+    mkdir -p "$_rootdir/build"
+    cd "$_rootdir/build"
+
+    # Only one of these is built.
+    #
+    # Colored output is enabled implicitly. If Ninja detects it's outputting to
+    # a pipe, it strips it away from the output, alternatively you can set the
+    # GCC_COLORS= (empty) env variable to temporarily disable colors. The
+    # inverse, i.e. preserving colors when Ninja outputs to a pipe can be done
+    # with CLICOLOR_FORCE=1: https://github.com/ninja-build/ninja/issues/2196
+    cmake .. \
+        -DCMAKE_CONFIGURATION_TYPES="Release;Debug;RelWithDebInfo" \
+        -DCMAKE_CROSS_CONFIGS=all \
+        -DCMAKE_CXX_FLAGS_RELWITHDEBINFO="-O2 -g -DNDEBUG -fno-omit-frame-pointer" \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_COLOR_DIAGNOSTICS=ON \
+        -DPYTHON_EXECUTABLE=$(which python) \
+        -DMAGNUM_WITH_PYTHON=ON \
+        -DMAGNUM_BUILD_TESTS=ON \
+        -G "Ninja Multi-Config"
+    ninja all:$_buildtype
+}
+
+check() {
+    cd "$_rootdir/build"
+    CORRADE_TEST_COLOR=ON ctest --output-on-failure -C $_buildtype
+
+    cd "$_rootdir/src/python/corrade"
+    python -m unittest -v
+
+    cd "$_rootdir/src/python/magnum"
+    python -m unittest -v
+
+    cd "$_rootdir/doc/python"
+    PYTHONPATH="$_rootdir/build/src/python/$_buildtype" python -m doctest -v *.rst
+}
+
+package() {
+    # Helper headers
+    cd "$_rootdir/build"
+    DESTDIR="$pkgdir/" ninja install:$_buildtype
+
+    # Native and python packages
+    cd "$_rootdir/build/src/python/$_buildtype"
+    python setup.py install --root="$pkgdir" --prefix=/usr
+}

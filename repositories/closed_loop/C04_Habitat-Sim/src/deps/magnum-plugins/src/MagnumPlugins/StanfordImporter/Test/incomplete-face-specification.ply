@@ -1,0 +1,11 @@
+ply
+format binary_little_endian 1.0
+element vertex 25
+property float x
+property float y
+property float z
+element face 30
+comment kate: newline-at-eof off;
+comment make sure there's no trailing newline added to verify that end_header
+comment is correctly detected even in this case
+end_header

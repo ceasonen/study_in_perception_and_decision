@@ -1,0 +1,49 @@
+{
+    "asset": {
+        "version": "2.0"
+    },
+    "meshes": [
+        {
+            "name": "accessor index out of range",
+            "primitives": [
+                {
+                    "note": "for indices tinygltf handles this, for attributes not. HEH. Using TEXCOORD so the initial check for texture coordinate types is verified for bounds checks also.",
+                    "attributes": {
+                        "TEXCOORD_0": 2
+                    }
+                }
+            ]
+        }
+    ],
+    "accessors": [
+        {
+            "name": "0",
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 1,
+            "type": "VEC2"
+        },
+        {
+            "name": "1",
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 1,
+            "type": "VEC2"
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteOffset": 0,
+            "byteLength": 8,
+            "byteStride": 8
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 8,
+            "comment": "base64.b64encode(bytes(8))",
+            "uri": "data:application/octet-stream;base64,AAAAAAAAAAA="
+        }
+    ]
+}

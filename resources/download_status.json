@@ -1,0 +1,1777 @@
+{
+  "started_at": "2026-09-26T12:13:18+00:00",
+  "repositories": {
+    "P01": {
+      "repo": "facebookresearch/detr",
+      "started_at": "2026-09-26T12:13:18+00:00",
+      "submodules": [],
+      "path": "repositories/perception/P01_DETR",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/facebookresearch/detr/tar.gz/refs/heads/main",
+      "files": 43,
+      "archive_bytes": 228188,
+      "archived_upstream": true,
+      "license_api": "Apache-2.0",
+      "upstream_url": "https://github.com/facebookresearch/detr",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:13:20+00:00"
+    },
+    "P02": {
+      "repo": "facebookresearch/dinov2",
+      "started_at": "2026-09-26T12:13:20+00:00",
+      "submodules": [],
+      "path": "repositories/perception/P02_DINOv2",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/facebookresearch/dinov2/tar.gz/refs/heads/main",
+      "files": 203,
+      "archive_bytes": 2869620,
+      "archived_upstream": false,
+      "license_api": "Apache-2.0",
+      "upstream_url": "https://github.com/facebookresearch/dinov2",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:13:24+00:00"
+    },
+    "P03": {
+      "repo": "facebookresearch/dinov3",
+      "started_at": "2026-09-26T12:13:24+00:00",
+      "submodules": [],
+      "path": "repositories/perception/P03_DINOv3",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/facebookresearch/dinov3/tar.gz/refs/heads/main",
+      "files": 221,
+      "archive_bytes": 13333041,
+      "archived_upstream": false,
+      "license_api": "NOASSERTION",
+      "upstream_url": "https://github.com/facebookresearch/dinov3",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:13:30+00:00"
+    },
+    "P04": {
+      "repo": "FoundationVision/ByteTrack",
+      "started_at": "2026-09-26T12:13:30+00:00",
+      "submodules": [],
+      "path": "repositories/perception/P04_ByteTrack",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/FoundationVision/ByteTrack/tar.gz/refs/heads/main",
+      "files": 229,
+      "archive_bytes": 65372798,
+      "archived_upstream": false,
+      "license_api": "MIT",
+      "upstream_url": "https://github.com/FoundationVision/ByteTrack",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:13:52+00:00"
+    },
+    "P05": {
+      "repo": "huanglianghua/GlobalTrack",
+      "started_at": "2026-09-26T12:13:52+00:00",
+      "submodules": [],
+      "path": "repositories/perception/P05_GlobalTrack",
+      "branch": "master",
+      "archive_url": "https://codeload.github.com/huanglianghua/GlobalTrack/tar.gz/refs/heads/master",
+      "files": 499,
+      "archive_bytes": 4512591,
+      "archived_upstream": false,
+      "license_api": null,
+      "upstream_url": "https://github.com/huanglianghua/GlobalTrack",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:13:55+00:00"
+    },
+    "P06": {
+      "repo": "XiaokunFeng/CSTrack",
+      "started_at": "2026-09-26T12:13:55+00:00",
+      "submodules": [],
+      "path": "repositories/perception/P06_CSTrack",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/XiaokunFeng/CSTrack/tar.gz/refs/heads/main",
+      "files": 194,
+      "archive_bytes": 1074545,
+      "archived_upstream": false,
+      "license_api": null,
+      "upstream_url": "https://github.com/XiaokunFeng/CSTrack",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:13:58+00:00"
+    },
+    "P07": {
+      "repo": "IDEA-Research/GroundingDINO",
+      "started_at": "2026-09-26T12:13:58+00:00",
+      "submodules": [],
+      "path": "repositories/perception/P07_GroundingDINO",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/IDEA-Research/GroundingDINO/tar.gz/refs/heads/main",
+      "files": 67,
+      "archive_bytes": 11143154,
+      "archived_upstream": false,
+      "license_api": "Apache-2.0",
+      "upstream_url": "https://github.com/IDEA-Research/GroundingDINO",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:14:03+00:00"
+    },
+    "D01": {
+      "repo": "vwxyzjn/cleanrl",
+      "started_at": "2026-09-26T12:14:03+00:00",
+      "submodules": [],
+      "path": "repositories/decision/D01_CleanRL",
+      "branch": "master",
+      "archive_url": "https://codeload.github.com/vwxyzjn/cleanrl/tar.gz/refs/heads/master",
+      "files": 402,
+      "archive_bytes": 79897099,
+      "archived_upstream": false,
+      "license_api": "NOASSERTION",
+      "upstream_url": "https://github.com/vwxyzjn/cleanrl",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:14:28+00:00"
+    },
+    "D02": {
+      "repo": "DLR-RM/stable-baselines3",
+      "started_at": "2026-09-26T12:14:28+00:00",
+      "submodules": [],
+      "path": "repositories/decision/D02_Stable-Baselines3",
+      "branch": "master",
+      "archive_url": "https://codeload.github.com/DLR-RM/stable-baselines3/tar.gz/refs/heads/master",
+      "files": 182,
+      "archive_bytes": 1413775,
+      "archived_upstream": false,
+      "license_api": "MIT",
+      "upstream_url": "https://github.com/DLR-RM/stable-baselines3",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:14:32+00:00"
+    },
+    "D03": {
+      "repo": "marlbenchmark/on-policy",
+      "started_at": "2026-09-26T12:14:32+00:00",
+      "submodules": [],
+      "path": "repositories/decision/D03_MAPPO",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/marlbenchmark/on-policy/tar.gz/refs/heads/main",
+      "files": 163,
+      "archive_bytes": 155808,
+      "archived_upstream": false,
+      "license_api": "MIT",
+      "upstream_url": "https://github.com/marlbenchmark/on-policy",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:14:35+00:00"
+    },
+    "D04": {
+      "repo": "oxwhirl/pymarl",
+      "started_at": "2026-09-26T12:14:35+00:00",
+      "submodules": [],
+      "path": "repositories/decision/D04_PyMARL",
+      "branch": "master",
+      "archive_url": "https://codeload.github.com/oxwhirl/pymarl/tar.gz/refs/heads/master",
+      "files": 52,
+      "archive_bytes": 29764,
+      "archived_upstream": false,
+      "license_api": "Apache-2.0",
+      "upstream_url": "https://github.com/oxwhirl/pymarl",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:14:37+00:00"
+    },
+    "D05": {
+      "repo": "LxzGordon/TAPE",
+      "started_at": "2026-09-26T12:14:37+00:00",
+      "submodules": [],
+      "path": "repositories/decision/D05_TAPE",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/LxzGordon/TAPE/tar.gz/refs/heads/main",
+      "files": 318,
+      "archive_bytes": 259669,
+      "archived_upstream": false,
+      "license_api": null,
+      "upstream_url": "https://github.com/LxzGordon/TAPE",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:14:39+00:00"
+    },
+    "D06": {
+      "repo": "sjtu-marl/malib",
+      "started_at": "2026-09-26T12:31:43+00:00",
+      "submodules": [
+        {
+          "declared_path": "malib/rollout/envs/smarts/_env",
+          "source": "https://github.com/huawei-noah/SMARTS.git",
+          "status": "stale_declaration",
+          "note": "The upstream .gitmodules entry has no corresponding path in the complete upstream tree."
+        }
+      ],
+      "path": "repositories/decision/D06_MALib",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/sjtu-marl/malib/tar.gz/refs/heads/main",
+      "files": 238,
+      "archive_bytes": 1591424,
+      "archived_upstream": false,
+      "license_api": "MIT",
+      "upstream_url": "https://github.com/sjtu-marl/malib",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:31:45+00:00"
+    },
+    "C01": {
+      "repo": "facebookresearch/drqv2",
+      "started_at": "2026-09-26T12:14:48+00:00",
+      "submodules": [],
+      "path": "repositories/closed_loop/C01_DrQ-v2",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/facebookresearch/drqv2/tar.gz/refs/heads/main",
+      "files": 65,
+      "archive_bytes": 626600,
+      "archived_upstream": true,
+      "license_api": "MIT",
+      "upstream_url": "https://github.com/facebookresearch/drqv2",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:14:51+00:00"
+    },
+    "C02": {
+      "repo": "danijar/dreamerv3",
+      "started_at": "2026-09-26T12:14:51+00:00",
+      "submodules": [],
+      "path": "repositories/closed_loop/C02_DreamerV3",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/danijar/dreamerv3/tar.gz/refs/heads/main",
+      "files": 95,
+      "archive_bytes": 6311602,
+      "archived_upstream": false,
+      "license_api": "MIT",
+      "upstream_url": "https://github.com/danijar/dreamerv3",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:14:54+00:00"
+    },
+    "C03": {
+      "repo": "facebookresearch/habitat-lab",
+      "started_at": "2026-09-26T12:14:54+00:00",
+      "submodules": [],
+      "path": "repositories/closed_loop/C03_Habitat-Lab",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/facebookresearch/habitat-lab/tar.gz/refs/heads/main",
+      "files": 721,
+      "archive_bytes": 88210812,
+      "archived_upstream": false,
+      "license_api": "MIT",
+      "upstream_url": "https://github.com/facebookresearch/habitat-lab",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:15:21+00:00"
+    },
+    "C04": {
+      "repo": "facebookresearch/habitat-sim",
+      "started_at": "2026-09-26T12:15:21+00:00",
+      "submodules": [
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/rapidjson",
+          "source": "https://github.com/Tencent/rapidjson",
+          "upstream_ref": "73063f5002612c6bf64fe24f851cd5cc0d83eef9",
+          "files": 299,
+          "archive_url": "https://codeload.github.com/Tencent/rapidjson/tar.gz/73063f5002612c6bf64fe24f851cd5cc0d83eef9",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/rapidjson/thirdparty/gtest",
+          "source": "https://github.com/google/googletest",
+          "upstream_ref": "0a439623f75c029912728d80cb7f1b8b48739ca4",
+          "files": 323,
+          "archive_url": "https://codeload.github.com/google/googletest/tar.gz/0a439623f75c029912728d80cb7f1b8b48739ca4",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/magnum",
+          "source": "https://github.com/mosra/magnum",
+          "upstream_ref": "70b0d76fcbb5d6d0fe43b3119446b0045fef64e5",
+          "files": 2183,
+          "archive_url": "https://codeload.github.com/mosra/magnum/tar.gz/70b0d76fcbb5d6d0fe43b3119446b0045fef64e5",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/magnum/toolchains",
+          "source": "https://github.com/mosra/toolchains",
+          "upstream_ref": "573f3d423e097739ebdf7fb32e72297d305b7a45",
+          "files": 12,
+          "archive_url": "https://codeload.github.com/mosra/toolchains/tar.gz/573f3d423e097739ebdf7fb32e72297d305b7a45",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/corrade",
+          "source": "https://github.com/mosra/corrade",
+          "upstream_ref": "451284cddcdc91300a59a194a11728e8124cb664",
+          "files": 794,
+          "archive_url": "https://codeload.github.com/mosra/corrade/tar.gz/451284cddcdc91300a59a194a11728e8124cb664",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/corrade/toolchains",
+          "source": "https://github.com/mosra/toolchains",
+          "upstream_ref": "573f3d423e097739ebdf7fb32e72297d305b7a45",
+          "files": 12,
+          "archive_url": "https://codeload.github.com/mosra/toolchains/tar.gz/573f3d423e097739ebdf7fb32e72297d305b7a45",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/magnum-plugins",
+          "source": "https://github.com/mosra/magnum-plugins",
+          "upstream_ref": "393b7cb0c098a261a79dbba3230520e008b414a0",
+          "files": 1656,
+          "archive_url": "https://codeload.github.com/mosra/magnum-plugins/tar.gz/393b7cb0c098a261a79dbba3230520e008b414a0",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/magnum-plugins/toolchains",
+          "source": "https://github.com/mosra/toolchains",
+          "upstream_ref": "573f3d423e097739ebdf7fb32e72297d305b7a45",
+          "files": 12,
+          "archive_url": "https://codeload.github.com/mosra/toolchains/tar.gz/573f3d423e097739ebdf7fb32e72297d305b7a45",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/pybind11",
+          "source": "https://github.com/pybind/pybind11",
+          "upstream_ref": "a2e59f0e7065404b44dfe92a28aca47ba1378dc4",
+          "files": 279,
+          "archive_url": "https://codeload.github.com/pybind/pybind11/tar.gz/a2e59f0e7065404b44dfe92a28aca47ba1378dc4",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/assimp",
+          "source": "https://github.com/assimp/assimp",
+          "upstream_ref": "c8dafe0d2887242285c0080c6cbbea8c1f1c8094",
+          "files": 2737,
+          "archive_url": "https://codeload.github.com/assimp/assimp/tar.gz/c8dafe0d2887242285c0080c6cbbea8c1f1c8094",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/glfw",
+          "source": "https://github.com/glfw/glfw",
+          "upstream_ref": "7b6aead9fb88b3623e3b3725ebb42670cbe4c579",
+          "files": 167,
+          "archive_url": "https://codeload.github.com/glfw/glfw/tar.gz/7b6aead9fb88b3623e3b3725ebb42670cbe4c579",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/recastnavigation",
+          "source": "https://github.com/recastnavigation/recastnavigation",
+          "upstream_ref": "6dc1667f580357e8a2154c28b7867bea7e8ad3a7",
+          "files": 156,
+          "archive_url": "https://codeload.github.com/recastnavigation/recastnavigation/tar.gz/6dc1667f580357e8a2154c28b7867bea7e8ad3a7",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/magnum-integration",
+          "source": "https://github.com/mosra/magnum-integration",
+          "upstream_ref": "6fca807891f05203fe5003275116b9854e918d87",
+          "files": 182,
+          "archive_url": "https://codeload.github.com/mosra/magnum-integration/tar.gz/6fca807891f05203fe5003275116b9854e918d87",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/magnum-integration/toolchains",
+          "source": "https://github.com/mosra/toolchains",
+          "upstream_ref": "573f3d423e097739ebdf7fb32e72297d305b7a45",
+          "files": 12,
+          "archive_url": "https://codeload.github.com/mosra/toolchains/tar.gz/573f3d423e097739ebdf7fb32e72297d305b7a45",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/magnum-bindings",
+          "source": "https://github.com/mosra/magnum-bindings",
+          "upstream_ref": "45811bb52e749677d5bc43d62b384ec546ed93bc",
+          "files": 176,
+          "archive_url": "https://codeload.github.com/mosra/magnum-bindings/tar.gz/45811bb52e749677d5bc43d62b384ec546ed93bc",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/docs/m.css",
+          "source": "https://github.com/mosra/m.css",
+          "upstream_ref": "0e5161ff17ebf3550bbc0cc99ef81ad7b7d8f80e",
+          "files": 1169,
+          "archive_url": "https://codeload.github.com/mosra/m.css/tar.gz/0e5161ff17ebf3550bbc0cc99ef81ad7b7d8f80e",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/tinyobjloader",
+          "source": "https://github.com/syoyo/tinyobjloader",
+          "upstream_ref": "e52dfdbecdf8893b161a65e508bc009746fa6042",
+          "files": 139,
+          "archive_url": "https://codeload.github.com/syoyo/tinyobjloader/tar.gz/e52dfdbecdf8893b161a65e508bc009746fa6042",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/bullet3",
+          "source": "https://github.com/bulletphysics/bullet3",
+          "upstream_ref": "2c204c49e56ed15ec5fcfa71d199ab6d6570b3f5",
+          "files": 7600,
+          "archive_url": "https://codeload.github.com/bulletphysics/bullet3/tar.gz/2c204c49e56ed15ec5fcfa71d199ab6d6570b3f5",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/openexr",
+          "source": "https://github.com/AcademySoftwareFoundation/openexr",
+          "upstream_ref": "68d9e1e17620cef00e59b43fa42c97fbcf90e72b",
+          "files": 799,
+          "archive_url": "https://codeload.github.com/AcademySoftwareFoundation/openexr/tar.gz/68d9e1e17620cef00e59b43fa42c97fbcf90e72b",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/rlr-audio-propagation",
+          "source": "https://github.com/facebookresearch/rlr-audio-propagation",
+          "upstream_ref": "4fd446b4abb5c71fb7a232a083bbddd65f25fc6f",
+          "files": 7,
+          "archive_url": "https://codeload.github.com/facebookresearch/rlr-audio-propagation/tar.gz/4fd446b4abb5c71fb7a232a083bbddd65f25fc6f",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C04_Habitat-Sim/src/deps/zstd",
+          "source": "https://github.com/facebook/zstd",
+          "upstream_ref": "f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+          "files": 637,
+          "archive_url": "https://codeload.github.com/facebook/zstd/tar.gz/f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+          "status": "downloaded"
+        }
+      ],
+      "path": "repositories/closed_loop/C04_Habitat-Sim",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/facebookresearch/habitat-sim/tar.gz/refs/heads/main",
+      "files": 914,
+      "archive_bytes": 56848405,
+      "archived_upstream": false,
+      "license_api": "MIT",
+      "upstream_url": "https://github.com/facebookresearch/habitat-sim",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:17:53+00:00"
+    },
+    "C05": {
+      "repo": "tonyzhaozh/act",
+      "started_at": "2026-09-26T12:17:53+00:00",
+      "submodules": [],
+      "path": "repositories/closed_loop/C05_ACT",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/tonyzhaozh/act/tar.gz/refs/heads/main",
+      "files": 48,
+      "archive_bytes": 466491,
+      "archived_upstream": false,
+      "license_api": "MIT",
+      "upstream_url": "https://github.com/tonyzhaozh/act",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:17:56+00:00"
+    },
+    "C06": {
+      "repo": "real-stanford/diffusion_policy",
+      "started_at": "2026-09-26T12:17:56+00:00",
+      "submodules": [],
+      "path": "repositories/closed_loop/C06_Diffusion-Policy",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/real-stanford/diffusion_policy/tar.gz/refs/heads/main",
+      "files": 369,
+      "archive_bytes": 13080980,
+      "archived_upstream": false,
+      "license_api": "MIT",
+      "upstream_url": "https://github.com/real-stanford/diffusion_policy",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:18:08+00:00"
+    },
+    "C07": {
+      "repo": "baaivision/CoS",
+      "started_at": "2026-09-26T12:18:08+00:00",
+      "submodules": [],
+      "path": "repositories/closed_loop/C07_CoS",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/baaivision/CoS/tar.gz/refs/heads/main",
+      "files": 138,
+      "archive_bytes": 1299897,
+      "archived_upstream": false,
+      "license_api": "Apache-2.0",
+      "upstream_url": "https://github.com/baaivision/CoS",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:18:12+00:00"
+    },
+    "C08": {
+      "repo": "Physical-Intelligence/openpi",
+      "started_at": "2026-09-26T12:30:26+00:00",
+      "submodules": [
+        {
+          "path": "repositories/closed_loop/C08_OpenPI/third_party/aloha",
+          "source": "https://github.com/Physical-Intelligence/aloha",
+          "upstream_ref": "d1dc83afd89ded4379851257fe5d85632d31d5ec",
+          "files": 35,
+          "archive_url": "https://codeload.github.com/Physical-Intelligence/aloha/tar.gz/d1dc83afd89ded4379851257fe5d85632d31d5ec",
+          "status": "downloaded"
+        },
+        {
+          "path": "repositories/closed_loop/C08_OpenPI/third_party/libero",
+          "source": "https://github.com/Lifelong-Robot-Learning/LIBERO",
+          "upstream_ref": "f78abd68ee283de9f9be3c8f7e2a9ad60246e95c",
+          "files": 1116,
+          "archive_url": "https://codeload.github.com/Lifelong-Robot-Learning/LIBERO/tar.gz/f78abd68ee283de9f9be3c8f7e2a9ad60246e95c",
+          "status": "downloaded"
+        }
+      ],
+      "path": "repositories/closed_loop/C08_OpenPI",
+      "branch": "main",
+      "archive_url": "https://codeload.github.com/Physical-Intelligence/openpi/tar.gz/refs/heads/main",
+      "files": 140,
+      "archive_bytes": 440516,
+      "archived_upstream": false,
+      "license_api": "Apache-2.0",
+      "upstream_url": "https://github.com/Physical-Intelligence/openpi",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:30:29+00:00"
+    }
+  },
+  "papers": {
+    "human_machine": {
+      "title": "人机对抗智能技术",
+      "landing_url": "http://scis.scichina.com/cn/2020/N112019-00048.pdf",
+      "pdf_url": "http://scis.scichina.com/cn/2020/N112019-00048.pdf",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:30:29+00:00",
+      "pages": 11,
+      "bytes": 6755537,
+      "path": "papers/overview/human_machine.pdf"
+    },
+    "resnet": {
+      "title": "Deep Residual Learning for Image Recognition",
+      "landing_url": "https://arxiv.org/abs/1512.03385",
+      "pdf_url": "https://arxiv.org/pdf/1512.03385",
+      "citation_metadata": {
+        "citation_title": [
+          "Deep Residual Learning for Image Recognition"
+        ],
+        "citation_author": [
+          "He, Kaiming",
+          "Zhang, Xiangyu",
+          "Ren, Shaoqing",
+          "Sun, Jian"
+        ],
+        "citation_date": [
+          "2015/12/10"
+        ],
+        "citation_online_date": [
+          "2015/12/10"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/1512.03385"
+        ],
+        "citation_arxiv_id": [
+          "1512.03385"
+        ],
+        "citation_abstract": [
+          "Deeper neural networks are more difficult to train. We present a residual learning framework to ease the training of networks that are substantially deeper than those used previously. We explicitly reformulate the layers as learning residual functions with reference to the layer inputs, instead of learning unreferenced functions. We provide comprehensive empirical evidence showing that these residual networks are easier to optimize, and can gain accuracy from considerably increased depth. On the ImageNet dataset we evaluate residual nets with a depth of up to 152 layers---8x deeper than VGG nets but still having lower complexity. An ensemble of these residual nets achieves 3.57% error on the ImageNet test set. This result won the 1st place on the ILSVRC 2015 classification task. We also present analysis on CIFAR-10 with 100 and 1000 layers. The depth of representations is of central importance for many visual recognition tasks. Solely due to our extremely deep representations, we obtain a 28% relative improvement on the COCO object detection dataset. Deep residual nets are foundations of our submissions to ILSVRC & COCO 2015 competitions, where we also won the 1st places on the tasks of ImageNet detection, ImageNet localization, COCO detection, and COCO segmentation."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:25:59+00:00",
+      "pages": 12,
+      "bytes": 819383,
+      "path": "papers/perception/resnet.pdf"
+    },
+    "vit": {
+      "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+      "landing_url": "https://arxiv.org/abs/2010.11929",
+      "pdf_url": "https://arxiv.org/pdf/2010.11929",
+      "citation_metadata": {
+        "citation_title": [
+          "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale"
+        ],
+        "citation_author": [
+          "Dosovitskiy, Alexey",
+          "Beyer, Lucas",
+          "Kolesnikov, Alexander",
+          "Weissenborn, Dirk",
+          "Zhai, Xiaohua",
+          "Unterthiner, Thomas",
+          "Dehghani, Mostafa",
+          "Minderer, Matthias",
+          "Heigold, Georg",
+          "Gelly, Sylvain",
+          "Uszkoreit, Jakob",
+          "Houlsby, Neil"
+        ],
+        "citation_date": [
+          "2020/10/22"
+        ],
+        "citation_online_date": [
+          "2021/06/03"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2010.11929"
+        ],
+        "citation_arxiv_id": [
+          "2010.11929"
+        ],
+        "citation_abstract": [
+          "While the Transformer architecture has become the de-facto standard for natural language processing tasks, its applications to computer vision remain limited. In vision, attention is either applied in conjunction with convolutional networks, or used to replace certain components of convolutional networks while keeping their overall structure in place. We show that this reliance on CNNs is not necessary and a pure transformer applied directly to sequences of image patches can perform very well on image classification tasks. When pre-trained on large amounts of data and transferred to multiple mid-sized or small image recognition benchmarks (ImageNet, CIFAR-100, VTAB, etc.), Vision Transformer (ViT) attains excellent results compared to state-of-the-art convolutional networks while requiring substantially fewer computational resources to train."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:26:06+00:00",
+      "pages": 22,
+      "bytes": 3743814,
+      "path": "papers/perception/vit.pdf"
+    },
+    "detr": {
+      "title": "End-to-End Object Detection with Transformers",
+      "landing_url": "https://arxiv.org/abs/2005.12872",
+      "pdf_url": "https://arxiv.org/pdf/2005.12872",
+      "citation_metadata": {
+        "citation_title": [
+          "End-to-End Object Detection with Transformers"
+        ],
+        "citation_author": [
+          "Carion, Nicolas",
+          "Massa, Francisco",
+          "Synnaeve, Gabriel",
+          "Usunier, Nicolas",
+          "Kirillov, Alexander",
+          "Zagoruyko, Sergey"
+        ],
+        "citation_date": [
+          "2020/05/26"
+        ],
+        "citation_online_date": [
+          "2020/05/28"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2005.12872"
+        ],
+        "citation_arxiv_id": [
+          "2005.12872"
+        ],
+        "citation_abstract": [
+          "We present a new method that views object detection as a direct set prediction problem. Our approach streamlines the detection pipeline, effectively removing the need for many hand-designed components like a non-maximum suppression procedure or anchor generation that explicitly encode our prior knowledge about the task. The main ingredients of the new framework, called DEtection TRansformer or DETR, are a set-based global loss that forces unique predictions via bipartite matching, and a transformer encoder-decoder architecture. Given a fixed small set of learned object queries, DETR reasons about the relations of the objects and the global image context to directly output the final set of predictions in parallel. The new model is conceptually simple and does not require a specialized library, unlike many other modern detectors. DETR demonstrates accuracy and run-time performance on par with the well-established and highly-optimized Faster RCNN baseline on the challenging COCO object detection dataset. Moreover, DETR can be easily generalized to produce panoptic segmentation in a unified manner. We show that it significantly outperforms competitive baselines. Training code and pretrained models are available at https://github.com/facebookresearch/detr."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:26:18+00:00",
+      "pages": 26,
+      "bytes": 7634041,
+      "path": "papers/perception/detr.pdf"
+    },
+    "dinov2": {
+      "title": "DINOv2: Learning Robust Visual Features without Supervision",
+      "landing_url": "https://arxiv.org/abs/2304.07193",
+      "pdf_url": "https://arxiv.org/pdf/2304.07193",
+      "citation_metadata": {
+        "citation_title": [
+          "DINOv2: Learning Robust Visual Features without Supervision"
+        ],
+        "citation_author": [
+          "Oquab, Maxime",
+          "Darcet, Timothée",
+          "Moutakanni, Théo",
+          "Vo, Huy",
+          "Szafraniec, Marc",
+          "Khalidov, Vasil",
+          "Fernandez, Pierre",
+          "Haziza, Daniel",
+          "Massa, Francisco",
+          "El-Nouby, Alaaeldin",
+          "Assran, Mahmoud",
+          "Ballas, Nicolas",
+          "Galuba, Wojciech",
+          "Howes, Russell",
+          "Huang, Po-Yao",
+          "Li, Shang-Wen",
+          "Misra, Ishan",
+          "Rabbat, Michael",
+          "Sharma, Vasu",
+          "Synnaeve, Gabriel",
+          "Xu, Hu",
+          "Jegou, Hervé",
+          "Mairal, Julien",
+          "Labatut, Patrick",
+          "Joulin, Armand",
+          "Bojanowski, Piotr"
+        ],
+        "citation_date": [
+          "2023/04/14"
+        ],
+        "citation_online_date": [
+          "2024/02/02"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2304.07193"
+        ],
+        "citation_arxiv_id": [
+          "2304.07193"
+        ],
+        "citation_abstract": [
+          "The recent breakthroughs in natural language processing for model pretraining on large quantities of data have opened the way for similar foundation models in computer vision. These models could greatly simplify the use of images in any system by producing all-purpose visual features, i.e., features that work across image distributions and tasks without finetuning. This work shows that existing pretraining methods, especially self-supervised methods, can produce such features if trained on enough curated data from diverse sources. We revisit existing approaches and combine different techniques to scale our pretraining in terms of data and model size. Most of the technical contributions aim at accelerating and stabilizing the training at scale. In terms of data, we propose an automatic pipeline to build a dedicated, diverse, and curated image dataset instead of uncurated data, as typically done in the self-supervised literature. In terms of models, we train a ViT model (Dosovitskiy et al., 2020) with 1B parameters and distill it into a series of smaller models that surpass the best available all-purpose features, OpenCLIP (Ilharco et al., 2021) on most of the benchmarks at image and pixel levels."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:26:23+00:00",
+      "pages": 32,
+      "bytes": 8049044,
+      "path": "papers/perception/dinov2.pdf"
+    },
+    "dinov3": {
+      "title": "DINOv3",
+      "landing_url": "https://arxiv.org/abs/2508.10104",
+      "pdf_url": "https://arxiv.org/pdf/2508.10104",
+      "citation_metadata": {
+        "citation_title": [
+          "DINOv3"
+        ],
+        "citation_author": [
+          "Siméoni, Oriane",
+          "Vo, Huy V.",
+          "Seitzer, Maximilian",
+          "Baldassarre, Federico",
+          "Oquab, Maxime",
+          "Jose, Cijo",
+          "Khalidov, Vasil",
+          "Szafraniec, Marc",
+          "Yi, Seungeun",
+          "Ramamonjisoa, Michaël",
+          "Massa, Francisco",
+          "Haziza, Daniel",
+          "Wehrstedt, Luca",
+          "Wang, Jianyuan",
+          "Darcet, Timothée",
+          "Moutakanni, Théo",
+          "Sentana, Leonel",
+          "Roberts, Claire",
+          "Vedaldi, Andrea",
+          "Tolan, Jamie",
+          "Brandt, John",
+          "Couprie, Camille",
+          "Mairal, Julien",
+          "Jégou, Hervé",
+          "Labatut, Patrick",
+          "Bojanowski, Piotr"
+        ],
+        "citation_date": [
+          "2025/08/13"
+        ],
+        "citation_online_date": [
+          "2025/08/13"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2508.10104"
+        ],
+        "citation_arxiv_id": [
+          "2508.10104"
+        ],
+        "citation_abstract": [
+          "Self-supervised learning holds the promise of eliminating the need for manual data annotation, enabling models to scale effortlessly to massive datasets and larger architectures. By not being tailored to specific tasks or domains, this training paradigm has the potential to learn visual representations from diverse sources, ranging from natural to aerial images -- using a single algorithm. This technical report introduces DINOv3, a major milestone toward realizing this vision by leveraging simple yet effective strategies. First, we leverage the benefit of scaling both dataset and model size by careful data preparation, design, and optimization. Second, we introduce a new method called Gram anchoring, which effectively addresses the known yet unsolved issue of dense feature maps degrading during long training schedules. Finally, we apply post-hoc strategies that further enhance our models' flexibility with respect to resolution, model size, and alignment with text. As a result, we present a versatile vision foundation model that outperforms the specialized state of the art across a broad range of settings, without fine-tuning. DINOv3 produces high-quality dense features that achieve outstanding performance on various vision tasks, significantly surpassing previous self- and weakly-supervised foundation models. We also share the DINOv3 suite of vision models, designed to advance the state of the art on a wide spectrum of tasks and data by providing scalable solutions for diverse resource constraints and deployment scenarios."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:26:34+00:00",
+      "pages": 67,
+      "bytes": 15823906,
+      "path": "papers/perception/dinov3.pdf"
+    },
+    "bytetrack": {
+      "title": "ByteTrack: Multi-Object Tracking by Associating Every Detection Box",
+      "landing_url": "https://arxiv.org/abs/2110.06864",
+      "pdf_url": "https://arxiv.org/pdf/2110.06864",
+      "citation_metadata": {
+        "citation_title": [
+          "ByteTrack: Multi-Object Tracking by Associating Every Detection Box"
+        ],
+        "citation_author": [
+          "Zhang, Yifu",
+          "Sun, Peize",
+          "Jiang, Yi",
+          "Yu, Dongdong",
+          "Weng, Fucheng",
+          "Yuan, Zehuan",
+          "Luo, Ping",
+          "Liu, Wenyu",
+          "Wang, Xinggang"
+        ],
+        "citation_date": [
+          "2021/10/13"
+        ],
+        "citation_online_date": [
+          "2022/04/07"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2110.06864"
+        ],
+        "citation_arxiv_id": [
+          "2110.06864"
+        ],
+        "citation_abstract": [
+          "Multi-object tracking (MOT) aims at estimating bounding boxes and identities of objects in videos. Most methods obtain identities by associating detection boxes whose scores are higher than a threshold. The objects with low detection scores, e.g. occluded objects, are simply thrown away, which brings non-negligible true object missing and fragmented trajectories. To solve this problem, we present a simple, effective and generic association method, tracking by associating almost every detection box instead of only the high score ones. For the low score detection boxes, we utilize their similarities with tracklets to recover true objects and filter out the background detections. When applied to 9 different state-of-the-art trackers, our method achieves consistent improvement on IDF1 score ranging from 1 to 10 points. To put forwards the state-of-the-art performance of MOT, we design a simple and strong tracker, named ByteTrack. For the first time, we achieve 80.3 MOTA, 77.3 IDF1 and 63.1 HOTA on the test set of MOT17 with 30 FPS running speed on a single V100 GPU. ByteTrack also achieves state-of-the-art performance on MOT20, HiEve and BDD100K tracking benchmarks. The source code, pre-trained models with deploy versions and tutorials of applying to other trackers are released at https://github.com/ifzhang/ByteTrack."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:26:46+00:00",
+      "pages": 14,
+      "bytes": 8638055,
+      "path": "papers/perception/bytetrack.pdf"
+    },
+    "globaltrack": {
+      "title": "GlobalTrack: A Simple and Strong Baseline for Long-term Tracking",
+      "landing_url": "https://arxiv.org/abs/1912.08531",
+      "pdf_url": "https://arxiv.org/pdf/1912.08531",
+      "citation_metadata": {
+        "citation_title": [
+          "GlobalTrack: A Simple and Strong Baseline for Long-term Tracking"
+        ],
+        "citation_author": [
+          "Huang, Lianghua",
+          "Zhao, Xin",
+          "Huang, Kaiqi"
+        ],
+        "citation_date": [
+          "2019/12/18"
+        ],
+        "citation_online_date": [
+          "2019/12/18"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/1912.08531"
+        ],
+        "citation_arxiv_id": [
+          "1912.08531"
+        ],
+        "citation_abstract": [
+          "A key capability of a long-term tracker is to search for targets in very large areas (typically the entire image) to handle possible target absences or tracking failures. However, currently there is a lack of such a strong baseline for global instance search. In this work, we aim to bridge this gap. Specifically, we propose GlobalTrack, a pure global instance search based tracker that makes no assumption on the temporal consistency of the target's positions and scales. GlobalTrack is developed based on two-stage object detectors, and it is able to perform full-image and multi-scale search of arbitrary instances with only a single query as the guide. We further propose a cross-query loss to improve the robustness of our approach against distractors. With no online learning, no punishment on position or scale changes, no scale smoothing and no trajectory refinement, our pure global instance search based tracker achieves comparable, sometimes much better performance on four large-scale tracking benchmarks (i.e., 52.1% AUC on LaSOT, 63.8% success rate on TLP, 60.3% MaxGM on OxUvA and 75.4% normalized precision on TrackingNet), compared to state-of-the-art approaches that typically require complex post-processing. More importantly, our tracker runs without cumulative errors, i.e., any type of temporary tracking failures will not affect its performance on future frames, making it ideal for long-term tracking. We hope this work will be a strong baseline for long-term tracking and will stimulate future works in this area. Code is available at https://github.com/huanglianghua/GlobalTrack."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:26:49+00:00",
+      "pages": 8,
+      "bytes": 1837678,
+      "path": "papers/perception/globaltrack.pdf"
+    },
+    "cstrack": {
+      "title": "CSTrack: Enhancing RGB-X Tracking via Compact Spatiotemporal Features",
+      "landing_url": "https://arxiv.org/abs/2505.19434",
+      "pdf_url": "https://arxiv.org/pdf/2505.19434",
+      "citation_metadata": {
+        "citation_title": [
+          "CSTrack: Enhancing RGB-X Tracking via Compact Spatiotemporal Features"
+        ],
+        "citation_author": [
+          "Feng, X.",
+          "Zhang, D.",
+          "Hu, S.",
+          "Li, X.",
+          "Wu, M.",
+          "Zhang, J.",
+          "Chen, X.",
+          "Huang, K."
+        ],
+        "citation_date": [
+          "2025/05/26"
+        ],
+        "citation_online_date": [
+          "2025/05/26"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2505.19434"
+        ],
+        "citation_arxiv_id": [
+          "2505.19434"
+        ],
+        "citation_abstract": [
+          "Effectively modeling and utilizing spatiotemporal features from RGB and other modalities (\\eg, depth, thermal, and event data, denoted as X) is the core of RGB-X tracker design. Existing methods often employ two parallel branches to separately process the RGB and X input streams, requiring the model to simultaneously handle two dispersed feature spaces, which complicates both the model structure and computation process. More critically, intra-modality spatial modeling within each dispersed space incurs substantial computational overhead, limiting resources for inter-modality spatial modeling and temporal modeling. To address this, we propose a novel tracker, CSTrack, which focuses on modeling Compact Spatiotemporal features to achieve simple yet effective tracking. Specifically, we first introduce an innovative Spatial Compact Module that integrates the RGB-X dual input streams into a compact spatial feature, enabling thorough intra- and inter-modality spatial modeling. Additionally, we design an efficient Temporal Compact Module that compactly represents temporal features by constructing the refined target distribution heatmap. Extensive experiments validate the effectiveness of our compact spatiotemporal modeling method, with CSTrack achieving new SOTA results on mainstream RGB-X benchmarks. The code and models will be released at: https://github.com/XiaokunFeng/CSTrack."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:00+00:00",
+      "pages": 19,
+      "bytes": 5438292,
+      "path": "papers/perception/cstrack.pdf"
+    },
+    "groundingdino": {
+      "title": "Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection",
+      "landing_url": "https://arxiv.org/abs/2303.05499",
+      "pdf_url": "https://arxiv.org/pdf/2303.05499",
+      "citation_metadata": {
+        "citation_title": [
+          "Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection"
+        ],
+        "citation_author": [
+          "Liu, Shilong",
+          "Zeng, Zhaoyang",
+          "Ren, Tianhe",
+          "Li, Feng",
+          "Zhang, Hao",
+          "Yang, Jie",
+          "Jiang, Qing",
+          "Li, Chunyuan",
+          "Yang, Jianwei",
+          "Su, Hang",
+          "Zhu, Jun",
+          "Zhang, Lei"
+        ],
+        "citation_date": [
+          "2023/03/09"
+        ],
+        "citation_online_date": [
+          "2024/07/19"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2303.05499"
+        ],
+        "citation_arxiv_id": [
+          "2303.05499"
+        ],
+        "citation_abstract": [
+          "In this paper, we present an open-set object detector, called Grounding DINO, by marrying Transformer-based detector DINO with grounded pre-training, which can detect arbitrary objects with human inputs such as category names or referring expressions. The key solution of open-set object detection is introducing language to a closed-set detector for open-set concept generalization. To effectively fuse language and vision modalities, we conceptually divide a closed-set detector into three phases and propose a tight fusion solution, which includes a feature enhancer, a language-guided query selection, and a cross-modality decoder for cross-modality fusion. While previous works mainly evaluate open-set object detection on novel categories, we propose to also perform evaluations on referring expression comprehension for objects specified with attributes. Grounding DINO performs remarkably well on all three settings, including benchmarks on COCO, LVIS, ODinW, and RefCOCO/+/g. Grounding DINO achieves a $52.5$ AP on the COCO detection zero-shot transfer benchmark, i.e., without any training data from COCO. It sets a new record on the ODinW zero-shot benchmark with a mean $26.1$ AP. Code will be available at \\url{https://github.com/IDEA-Research/GroundingDINO}."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:19+00:00",
+      "pages": 33,
+      "bytes": 4329735,
+      "path": "papers/perception/groundingdino.pdf"
+    },
+    "ppo": {
+      "title": "Proximal Policy Optimization Algorithms",
+      "landing_url": "https://arxiv.org/abs/1707.06347",
+      "pdf_url": "https://arxiv.org/pdf/1707.06347",
+      "citation_metadata": {
+        "citation_title": [
+          "Proximal Policy Optimization Algorithms"
+        ],
+        "citation_author": [
+          "Schulman, John",
+          "Wolski, Filip",
+          "Dhariwal, Prafulla",
+          "Radford, Alec",
+          "Klimov, Oleg"
+        ],
+        "citation_date": [
+          "2017/07/20"
+        ],
+        "citation_online_date": [
+          "2017/08/28"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/1707.06347"
+        ],
+        "citation_arxiv_id": [
+          "1707.06347"
+        ],
+        "citation_abstract": [
+          "We propose a new family of policy gradient methods for reinforcement learning, which alternate between sampling data through interaction with the environment, and optimizing a \"surrogate\" objective function using stochastic gradient ascent. Whereas standard policy gradient methods perform one gradient update per data sample, we propose a novel objective function that enables multiple epochs of minibatch updates. The new methods, which we call proximal policy optimization (PPO), have some of the benefits of trust region policy optimization (TRPO), but they are much simpler to implement, more general, and have better sample complexity (empirically). Our experiments test PPO on a collection of benchmark tasks, including simulated robotic locomotion and Atari game playing, and we show that PPO outperforms other online policy gradient methods, and overall strikes a favorable balance between sample complexity, simplicity, and wall-time."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:23+00:00",
+      "pages": 12,
+      "bytes": 2923532,
+      "path": "papers/decision/ppo.pdf"
+    },
+    "sac": {
+      "title": "Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor",
+      "landing_url": "https://arxiv.org/abs/1801.01290",
+      "pdf_url": "https://arxiv.org/pdf/1801.01290",
+      "citation_metadata": {
+        "citation_title": [
+          "Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor"
+        ],
+        "citation_author": [
+          "Haarnoja, Tuomas",
+          "Zhou, Aurick",
+          "Abbeel, Pieter",
+          "Levine, Sergey"
+        ],
+        "citation_date": [
+          "2018/01/04"
+        ],
+        "citation_online_date": [
+          "2018/08/08"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/1801.01290"
+        ],
+        "citation_arxiv_id": [
+          "1801.01290"
+        ],
+        "citation_abstract": [
+          "Model-free deep reinforcement learning (RL) algorithms have been demonstrated on a range of challenging decision making and control tasks. However, these methods typically suffer from two major challenges: very high sample complexity and brittle convergence properties, which necessitate meticulous hyperparameter tuning. Both of these challenges severely limit the applicability of such methods to complex, real-world domains. In this paper, we propose soft actor-critic, an off-policy actor-critic deep RL algorithm based on the maximum entropy reinforcement learning framework. In this framework, the actor aims to maximize expected reward while also maximizing entropy. That is, to succeed at the task while acting as randomly as possible. Prior deep RL methods based on this framework have been formulated as Q-learning methods. By combining off-policy updates with a stable stochastic actor-critic formulation, our method achieves state-of-the-art performance on a range of continuous control benchmark tasks, outperforming prior on-policy and off-policy methods. Furthermore, we demonstrate that, in contrast to other off-policy algorithms, our approach is very stable, achieving very similar performance across different random seeds."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:30+00:00",
+      "pages": 14,
+      "bytes": 4388102,
+      "path": "papers/decision/sac.pdf"
+    },
+    "cleanrl": {
+      "title": "CleanRL: High-quality Single-file Implementations of Deep Reinforcement Learning Algorithms",
+      "landing_url": "https://jmlr.org/papers/v23/21-1342.html",
+      "pdf_url": "https://jmlr.org/papers/volume23/21-1342/21-1342.pdf",
+      "citation_metadata": {
+        "citation_title": [
+          "CleanRL: High-quality Single-file Implementations of Deep Reinforcement Learning Algorithms"
+        ],
+        "citation_author": [
+          "Shengyi Huang",
+          "Rousslan Fernand Julien Dossa",
+          "Chang Ye",
+          "Jeff Braga",
+          "Dipam Chakraborty",
+          "Kinal Mehta",
+          "João G.M. Araújo"
+        ],
+        "citation_journal_title": [
+          "Journal of Machine Learning Research"
+        ],
+        "citation_volume": [
+          "23"
+        ],
+        "citation_issue": [
+          "274"
+        ],
+        "citation_firstpage": [
+          "1"
+        ],
+        "citation_lastpage": [
+          "18"
+        ],
+        "citation_pdf_url": [
+          "http://jmlr.org/papers/volume23/21-1342/21-1342.pdf"
+        ],
+        "citation_publication_date": [
+          "2022"
+        ],
+        "citation_public_url": [
+          "http://jmlr.org/papers/v23/21-1342.html"
+        ],
+        "citation_abstract_html_url": [
+          "http://jmlr.org/papers/v23/21-1342.html"
+        ],
+        "citation_issn": [
+          "1533-7928"
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:36+00:00",
+      "pages": 18,
+      "bytes": 1612586,
+      "path": "papers/decision/cleanrl.pdf"
+    },
+    "sb3": {
+      "title": "Stable-Baselines3: Reliable Reinforcement Learning Implementations",
+      "landing_url": "https://jmlr.org/papers/v22/20-1364.html",
+      "pdf_url": "https://jmlr.org/papers/volume22/20-1364/20-1364.pdf",
+      "citation_metadata": {
+        "citation_title": [
+          "Stable-Baselines3: Reliable Reinforcement Learning Implementations"
+        ],
+        "citation_author": [
+          "Antonin Raffin",
+          "Ashley Hill",
+          "Adam Gleave",
+          "Anssi Kanervisto",
+          "Maximilian Ernestus",
+          "Noah Dormann"
+        ],
+        "citation_journal_title": [
+          "Journal of Machine Learning Research"
+        ],
+        "citation_volume": [
+          "22"
+        ],
+        "citation_issue": [
+          "268"
+        ],
+        "citation_firstpage": [
+          "1"
+        ],
+        "citation_lastpage": [
+          "8"
+        ],
+        "citation_pdf_url": [
+          "http://jmlr.org/papers/volume22/20-1364/20-1364.pdf"
+        ],
+        "citation_publication_date": [
+          "2021"
+        ],
+        "citation_public_url": [
+          "http://jmlr.org/papers/v22/20-1364.html"
+        ],
+        "citation_abstract_html_url": [
+          "http://jmlr.org/papers/v22/20-1364.html"
+        ],
+        "citation_issn": [
+          "1533-7928"
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:39+00:00",
+      "pages": 8,
+      "bytes": 249259,
+      "path": "papers/decision/sb3.pdf"
+    },
+    "mappo": {
+      "title": "The Surprising Effectiveness of PPO in Cooperative, Multi-Agent Games",
+      "landing_url": "https://arxiv.org/abs/2103.01955",
+      "pdf_url": "https://arxiv.org/pdf/2103.01955",
+      "citation_metadata": {
+        "citation_title": [
+          "The Surprising Effectiveness of PPO in Cooperative, Multi-Agent Games"
+        ],
+        "citation_author": [
+          "Yu, Chao",
+          "Velu, Akash",
+          "Vinitsky, Eugene",
+          "Gao, Jiaxuan",
+          "Wang, Yu",
+          "Bayen, Alexandre",
+          "Wu, Yi"
+        ],
+        "citation_date": [
+          "2021/03/02"
+        ],
+        "citation_online_date": [
+          "2022/11/04"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2103.01955"
+        ],
+        "citation_arxiv_id": [
+          "2103.01955"
+        ],
+        "citation_abstract": [
+          "Proximal Policy Optimization (PPO) is a ubiquitous on-policy reinforcement learning algorithm but is significantly less utilized than off-policy learning algorithms in multi-agent settings. This is often due to the belief that PPO is significantly less sample efficient than off-policy methods in multi-agent systems. In this work, we carefully study the performance of PPO in cooperative multi-agent settings. We show that PPO-based multi-agent algorithms achieve surprisingly strong performance in four popular multi-agent testbeds: the particle-world environments, the StarCraft multi-agent challenge, Google Research Football, and the Hanabi challenge, with minimal hyperparameter tuning and without any domain-specific algorithmic modifications or architectures. Importantly, compared to competitive off-policy methods, PPO often achieves competitive or superior results in both final returns and sample efficiency. Finally, through ablation studies, we analyze implementation and hyperparameter factors that are critical to PPO's empirical performance, and give concrete practical suggestions regarding these factors. Our results show that when using these practices, simple PPO-based methods can be a strong baseline in cooperative multi-agent reinforcement learning. Source code is released at \\url{https://github.com/marlbenchmark/on-policy}."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:44+00:00",
+      "pages": 30,
+      "bytes": 16261854,
+      "path": "papers/decision/mappo.pdf"
+    },
+    "qmix": {
+      "title": "QMIX: Monotonic Value Function Factorisation for Deep Multi-Agent Reinforcement Learning",
+      "landing_url": "https://arxiv.org/abs/1803.11485",
+      "pdf_url": "https://arxiv.org/pdf/1803.11485",
+      "citation_metadata": {
+        "citation_title": [
+          "QMIX: Monotonic Value Function Factorisation for Deep Multi-Agent Reinforcement Learning"
+        ],
+        "citation_author": [
+          "Rashid, Tabish",
+          "Samvelyan, Mikayel",
+          "de Witt, Christian Schroeder",
+          "Farquhar, Gregory",
+          "Foerster, Jakob",
+          "Whiteson, Shimon"
+        ],
+        "citation_date": [
+          "2018/03/30"
+        ],
+        "citation_online_date": [
+          "2018/06/06"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/1803.11485"
+        ],
+        "citation_arxiv_id": [
+          "1803.11485"
+        ],
+        "citation_abstract": [
+          "In many real-world settings, a team of agents must coordinate their behaviour while acting in a decentralised way. At the same time, it is often possible to train the agents in a centralised fashion in a simulated or laboratory setting, where global state information is available and communication constraints are lifted. Learning joint action-values conditioned on extra state information is an attractive way to exploit centralised learning, but the best strategy for then extracting decentralised policies is unclear. Our solution is QMIX, a novel value-based method that can train decentralised policies in a centralised end-to-end fashion. QMIX employs a network that estimates joint action-values as a complex non-linear combination of per-agent values that condition only on local observations. We structurally enforce that the joint-action value is monotonic in the per-agent values, which allows tractable maximisation of the joint action-value in off-policy learning, and guarantees consistency between the centralised and decentralised policies. We evaluate QMIX on a challenging set of StarCraft II micromanagement tasks, and show that QMIX significantly outperforms existing value-based multi-agent reinforcement learning methods."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:48+00:00",
+      "pages": 14,
+      "bytes": 3808951,
+      "path": "papers/decision/qmix.pdf"
+    },
+    "tape": {
+      "title": "TAPE: Leveraging Agent Topology for Cooperative Multi-Agent Policy Gradient",
+      "landing_url": "https://arxiv.org/abs/2312.15667",
+      "pdf_url": "https://arxiv.org/pdf/2312.15667",
+      "citation_metadata": {
+        "citation_title": [
+          "TAPE: Leveraging Agent Topology for Cooperative Multi-Agent Policy Gradient"
+        ],
+        "citation_author": [
+          "Lou, Xingzhou",
+          "Zhang, Junge",
+          "Norman, Timothy J.",
+          "Huang, Kaiqi",
+          "Du, Yali"
+        ],
+        "citation_date": [
+          "2023/12/25"
+        ],
+        "citation_online_date": [
+          "2024/01/15"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2312.15667"
+        ],
+        "citation_arxiv_id": [
+          "2312.15667"
+        ],
+        "citation_abstract": [
+          "Multi-Agent Policy Gradient (MAPG) has made significant progress in recent years. However, centralized critics in state-of-the-art MAPG methods still face the centralized-decentralized mismatch (CDM) issue, which means sub-optimal actions by some agents will affect other agent's policy learning. While using individual critics for policy updates can avoid this issue, they severely limit cooperation among agents. To address this issue, we propose an agent topology framework, which decides whether other agents should be considered in policy gradient and achieves compromise between facilitating cooperation and alleviating the CDM issue. The agent topology allows agents to use coalition utility as learning objective instead of global utility by centralized critics or local utility by individual critics. To constitute the agent topology, various models are studied. We propose Topology-based multi-Agent Policy gradiEnt (TAPE) for both stochastic and deterministic MAPG methods. We prove the policy improvement theorem for stochastic TAPE and give a theoretical explanation for the improved cooperation among agents. Experiment results on several benchmarks show the agent topology is able to facilitate agent cooperation and alleviate CDM issue respectively to improve performance of TAPE. Finally, multiple ablation studies and a heuristic graph search algorithm are devised to show the efficacy of the agent topology."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:52+00:00",
+      "pages": 16,
+      "bytes": 1615481,
+      "path": "papers/decision/tape.pdf"
+    },
+    "distributed_rl": {
+      "title": "Distributed Deep Reinforcement Learning: A Survey and A Multi-Player Multi-Agent Learning Toolbox",
+      "landing_url": "https://arxiv.org/abs/2212.00253",
+      "pdf_url": "https://arxiv.org/pdf/2212.00253",
+      "citation_metadata": {
+        "citation_title": [
+          "Distributed Deep Reinforcement Learning: A Survey and A Multi-Player Multi-Agent Learning Toolbox"
+        ],
+        "citation_author": [
+          "Yin, Qiyue",
+          "Yu, Tongtong",
+          "Shen, Shengqi",
+          "Yang, Jun",
+          "Zhao, Meijing",
+          "Huang, Kaiqi",
+          "Liang, Bin",
+          "Wang, Liang"
+        ],
+        "citation_doi": [
+          "10.1007/s11633-023-1454-4"
+        ],
+        "citation_date": [
+          "2022/12/01"
+        ],
+        "citation_online_date": [
+          "2022/12/01"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2212.00253"
+        ],
+        "citation_arxiv_id": [
+          "2212.00253"
+        ],
+        "citation_abstract": [
+          "With the breakthrough of AlphaGo, deep reinforcement learning becomes a recognized technique for solving sequential decision-making problems. Despite its reputation, data inefficiency caused by its trial and error learning mechanism makes deep reinforcement learning hard to be practical in a wide range of areas. Plenty of methods have been developed for sample efficient deep reinforcement learning, such as environment modeling, experience transfer, and distributed modifications, amongst which, distributed deep reinforcement learning has shown its potential in various applications, such as human-computer gaming, and intelligent transportation. In this paper, we conclude the state of this exciting field, by comparing the classical distributed deep reinforcement learning methods, and studying important components to achieve efficient distributed learning, covering single player single agent distributed deep reinforcement learning to the most complex multiple players multiple agents distributed deep reinforcement learning. Furthermore, we review recently released toolboxes that help to realize distributed deep reinforcement learning without many modifications of their non-distributed versions. By analyzing their strengths and weaknesses, a multi-player multi-agent distributed deep reinforcement learning toolbox is developed and released, which is further validated on Wargame, a complex environment, showing usability of the proposed toolbox for multiple players and multiple agents distributed deep reinforcement learning under complex games. Finally, we try to point out challenges and future trends, hoping this brief review can provide a guide or a spark for researchers who are interested in distributed deep reinforcement learning."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:55+00:00",
+      "pages": 14,
+      "bytes": 1413935,
+      "path": "papers/decision/distributed_rl.pdf"
+    },
+    "m2rl": {
+      "title": "M2RL: A Multi-player Multi-agent Reinforcement Learning Framework for Complex Games",
+      "landing_url": "https://www.ijcai.org/proceedings/2024/1046",
+      "pdf_url": "https://www.ijcai.org/proceedings/2024/1046.pdf",
+      "citation_metadata": {
+        "citation_title": [
+          "M2RL: A Multi-player Multi-agent Reinforcement Learning Framework for Complex Games"
+        ],
+        "citation_language": [
+          "en"
+        ],
+        "citation_abstract_html_url": [
+          "https://www.ijcai.org/proceedings/2024/1046"
+        ],
+        "citation_author": [
+          "Tongtong Yu",
+          "Chenghua He",
+          "Qiyue Yin"
+        ],
+        "citation_conference_title": [
+          "Thirty-Third International Joint Conference on Artificial Intelligence"
+        ],
+        "citation_publication_date": [
+          "2024/08/01"
+        ],
+        "citation_online_date": [
+          "2024/08/01"
+        ],
+        "citation_date": [
+          "2024/08/01"
+        ],
+        "citation_firstpage": [
+          "8847"
+        ],
+        "citation_lastpage": [
+          "8850"
+        ],
+        "citation_pdf_url": [
+          "https://www.ijcai.org/proceedings/2024/1046.pdf"
+        ],
+        "citation_issn": [
+          "1045-0823"
+        ],
+        "citation_doi": [
+          "10.24963/ijcai.2024/1046"
+        ],
+        "citation_volume": [
+          "9"
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:27:59+00:00",
+      "pages": 4,
+      "bytes": 1027608,
+      "path": "papers/decision/m2rl.pdf"
+    },
+    "malib": {
+      "title": "MALib: A Parallel Framework for Population-based Multi-agent Reinforcement Learning",
+      "landing_url": "https://jmlr.org/papers/v24/22-0169.html",
+      "pdf_url": "https://jmlr.org/papers/volume24/22-0169/22-0169.pdf",
+      "citation_metadata": {
+        "citation_title": [
+          "MALib: A Parallel Framework for Population-based Multi-agent Reinforcement Learning"
+        ],
+        "citation_author": [
+          "Ming Zhou",
+          "Ziyu Wan",
+          "Hanjing Wang",
+          "Muning Wen",
+          "Runzhe Wu",
+          "Ying Wen",
+          "Yaodong Yang",
+          "Yong Yu",
+          "Jun Wang",
+          "Weinan Zhang"
+        ],
+        "citation_journal_title": [
+          "Journal of Machine Learning Research"
+        ],
+        "citation_volume": [
+          "24"
+        ],
+        "citation_issue": [
+          "150"
+        ],
+        "citation_firstpage": [
+          "1"
+        ],
+        "citation_lastpage": [
+          "12"
+        ],
+        "citation_pdf_url": [
+          "http://jmlr.org/papers/volume24/22-0169/22-0169.pdf"
+        ],
+        "citation_publication_date": [
+          "2023"
+        ],
+        "citation_public_url": [
+          "http://jmlr.org/papers/v24/22-0169.html"
+        ],
+        "citation_abstract_html_url": [
+          "http://jmlr.org/papers/v24/22-0169.html"
+        ],
+        "citation_issn": [
+          "1533-7928"
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:28:02+00:00",
+      "pages": 12,
+      "bytes": 1425917,
+      "path": "papers/decision/malib.pdf"
+    },
+    "drqv2": {
+      "title": "Mastering Visual Continuous Control: Improved Data-Augmented Reinforcement Learning",
+      "landing_url": "https://arxiv.org/abs/2107.09645",
+      "pdf_url": "https://arxiv.org/pdf/2107.09645",
+      "citation_metadata": {
+        "citation_title": [
+          "Mastering Visual Continuous Control: Improved Data-Augmented Reinforcement Learning"
+        ],
+        "citation_author": [
+          "Yarats, Denis",
+          "Fergus, Rob",
+          "Lazaric, Alessandro",
+          "Pinto, Lerrel"
+        ],
+        "citation_date": [
+          "2021/07/20"
+        ],
+        "citation_online_date": [
+          "2021/07/20"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2107.09645"
+        ],
+        "citation_arxiv_id": [
+          "2107.09645"
+        ],
+        "citation_abstract": [
+          "We present DrQ-v2, a model-free reinforcement learning (RL) algorithm for visual continuous control. DrQ-v2 builds on DrQ, an off-policy actor-critic approach that uses data augmentation to learn directly from pixels. We introduce several improvements that yield state-of-the-art results on the DeepMind Control Suite. Notably, DrQ-v2 is able to solve complex humanoid locomotion tasks directly from pixel observations, previously unattained by model-free RL. DrQ-v2 is conceptually simple, easy to implement, and provides significantly better computational footprint compared to prior work, with the majority of tasks taking just 8 hours to train on a single GPU. Finally, we publicly release DrQ-v2's implementation to provide RL practitioners with a strong and computationally efficient baseline."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:28:04+00:00",
+      "pages": 18,
+      "bytes": 2385290,
+      "path": "papers/closed_loop/drqv2.pdf"
+    },
+    "dreamerv3": {
+      "title": "Mastering Diverse Domains through World Models",
+      "landing_url": "https://arxiv.org/abs/2301.04104",
+      "pdf_url": "https://arxiv.org/pdf/2301.04104",
+      "citation_metadata": {
+        "citation_title": [
+          "Mastering Diverse Domains through World Models"
+        ],
+        "citation_author": [
+          "Hafner, Danijar",
+          "Pasukonis, Jurgis",
+          "Ba, Jimmy",
+          "Lillicrap, Timothy"
+        ],
+        "citation_date": [
+          "2023/01/10"
+        ],
+        "citation_online_date": [
+          "2024/04/17"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2301.04104"
+        ],
+        "citation_arxiv_id": [
+          "2301.04104"
+        ],
+        "citation_abstract": [
+          "Developing a general algorithm that learns to solve tasks across a wide range of applications has been a fundamental challenge in artificial intelligence. Although current reinforcement learning algorithms can be readily applied to tasks similar to what they have been developed for, configuring them for new application domains requires significant human expertise and experimentation. We present DreamerV3, a general algorithm that outperforms specialized methods across over 150 diverse tasks, with a single configuration. Dreamer learns a model of the environment and improves its behavior by imagining future scenarios. Robustness techniques based on normalization, balancing, and transformations enable stable learning across domains. Applied out of the box, Dreamer is the first algorithm to collect diamonds in Minecraft from scratch without human data or curricula. This achievement has been posed as a significant challenge in artificial intelligence that requires exploring farsighted strategies from pixels and sparse rewards in an open world. Our work allows solving challenging control problems without extensive experimentation, making reinforcement learning broadly applicable."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:28:07+00:00",
+      "pages": 40,
+      "bytes": 2874717,
+      "path": "papers/closed_loop/dreamerv3.pdf"
+    },
+    "habitat": {
+      "title": "Habitat: A Platform for Embodied AI Research",
+      "landing_url": "https://arxiv.org/abs/1904.01201",
+      "pdf_url": "https://arxiv.org/pdf/1904.01201",
+      "citation_metadata": {
+        "citation_title": [
+          "Habitat: A Platform for Embodied AI Research"
+        ],
+        "citation_author": [
+          "Savva, Manolis",
+          "Kadian, Abhishek",
+          "Maksymets, Oleksandr",
+          "Zhao, Yili",
+          "Wijmans, Erik",
+          "Jain, Bhavana",
+          "Straub, Julian",
+          "Liu, Jia",
+          "Koltun, Vladlen",
+          "Malik, Jitendra",
+          "Parikh, Devi",
+          "Batra, Dhruv"
+        ],
+        "citation_date": [
+          "2019/04/02"
+        ],
+        "citation_online_date": [
+          "2019/11/25"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/1904.01201"
+        ],
+        "citation_arxiv_id": [
+          "1904.01201"
+        ],
+        "citation_abstract": [
+          "We present Habitat, a platform for research in embodied artificial intelligence (AI). Habitat enables training embodied agents (virtual robots) in highly efficient photorealistic 3D simulation. Specifically, Habitat consists of: (i) Habitat-Sim: a flexible, high-performance 3D simulator with configurable agents, sensors, and generic 3D dataset handling. Habitat-Sim is fast -- when rendering a scene from Matterport3D, it achieves several thousand frames per second (fps) running single-threaded, and can reach over 10,000 fps multi-process on a single GPU. (ii) Habitat-API: a modular high-level library for end-to-end development of embodied AI algorithms -- defining tasks (e.g., navigation, instruction following, question answering), configuring, training, and benchmarking embodied agents. These large-scale engineering contributions enable us to answer scientific questions requiring experiments that were till now impracticable or 'merely' impractical. Specifically, in the context of point-goal navigation: (1) we revisit the comparison between learning and SLAM approaches from two recent works and find evidence for the opposite conclusion -- that learning outperforms SLAM if scaled to an order of magnitude more experience than previous investigations, and (2) we conduct the first cross-dataset generalization experiments {train, test} x {Matterport3D, Gibson} for multiple sensors {blind, RGB, RGBD, D} and find that only agents with depth (D) sensors generalize across datasets. We hope that our open-source platform and these findings will advance research in embodied AI."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:28:11+00:00",
+      "pages": 17,
+      "bytes": 6108339,
+      "path": "papers/closed_loop/habitat.pdf"
+    },
+    "habitat2": {
+      "title": "Habitat 2.0: Training Home Assistants to Rearrange their Habitat",
+      "landing_url": "https://arxiv.org/abs/2106.14405",
+      "pdf_url": "https://arxiv.org/pdf/2106.14405",
+      "citation_metadata": {
+        "citation_title": [
+          "Habitat 2.0: Training Home Assistants to Rearrange their Habitat"
+        ],
+        "citation_author": [
+          "Szot, Andrew",
+          "Clegg, Alex",
+          "Undersander, Eric",
+          "Wijmans, Erik",
+          "Zhao, Yili",
+          "Turner, John",
+          "Maestre, Noah",
+          "Mukadam, Mustafa",
+          "Chaplot, Devendra",
+          "Maksymets, Oleksandr",
+          "Gokaslan, Aaron",
+          "Vondrus, Vladimir",
+          "Dharur, Sameer",
+          "Meier, Franziska",
+          "Galuba, Wojciech",
+          "Chang, Angel",
+          "Kira, Zsolt",
+          "Koltun, Vladlen",
+          "Malik, Jitendra",
+          "Savva, Manolis",
+          "Batra, Dhruv"
+        ],
+        "citation_date": [
+          "2021/06/28"
+        ],
+        "citation_online_date": [
+          "2022/07/01"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2106.14405"
+        ],
+        "citation_arxiv_id": [
+          "2106.14405"
+        ],
+        "citation_abstract": [
+          "We introduce Habitat 2.0 (H2.0), a simulation platform for training virtual robots in interactive 3D environments and complex physics-enabled scenarios. We make comprehensive contributions to all levels of the embodied AI stack - data, simulation, and benchmark tasks. Specifically, we present: (i) ReplicaCAD: an artist-authored, annotated, reconfigurable 3D dataset of apartments (matching real spaces) with articulated objects (e.g. cabinets and drawers that can open/close); (ii) H2.0: a high-performance physics-enabled 3D simulator with speeds exceeding 25,000 simulation steps per second (850x real-time) on an 8-GPU node, representing 100x speed-ups over prior work; and, (iii) Home Assistant Benchmark (HAB): a suite of common tasks for assistive robots (tidy the house, prepare groceries, set the table) that test a range of mobile manipulation capabilities. These large-scale engineering contributions allow us to systematically compare deep reinforcement learning (RL) at scale and classical sense-plan-act (SPA) pipelines in long-horizon structured tasks, with an emphasis on generalization to new objects, receptacles, and layouts. We find that (1) flat RL policies struggle on HAB compared to hierarchical ones; (2) a hierarchy with independent skills suffers from 'hand-off problems', and (3) SPA pipelines are more brittle than RL policies."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:28:28+00:00",
+      "pages": 32,
+      "bytes": 45408472,
+      "path": "papers/closed_loop/habitat2.pdf"
+    },
+    "act": {
+      "title": "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware",
+      "landing_url": "https://arxiv.org/abs/2304.13705",
+      "pdf_url": "https://arxiv.org/pdf/2304.13705",
+      "citation_metadata": {
+        "citation_title": [
+          "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware"
+        ],
+        "citation_author": [
+          "Zhao, Tony Z.",
+          "Kumar, Vikash",
+          "Levine, Sergey",
+          "Finn, Chelsea"
+        ],
+        "citation_date": [
+          "2023/04/23"
+        ],
+        "citation_online_date": [
+          "2023/04/23"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2304.13705"
+        ],
+        "citation_arxiv_id": [
+          "2304.13705"
+        ],
+        "citation_abstract": [
+          "Fine manipulation tasks, such as threading cable ties or slotting a battery, are notoriously difficult for robots because they require precision, careful coordination of contact forces, and closed-loop visual feedback. Performing these tasks typically requires high-end robots, accurate sensors, or careful calibration, which can be expensive and difficult to set up. Can learning enable low-cost and imprecise hardware to perform these fine manipulation tasks? We present a low-cost system that performs end-to-end imitation learning directly from real demonstrations, collected with a custom teleoperation interface. Imitation learning, however, presents its own challenges, particularly in high-precision domains: errors in the policy can compound over time, and human demonstrations can be non-stationary. To address these challenges, we develop a simple yet novel algorithm, Action Chunking with Transformers (ACT), which learns a generative model over action sequences. ACT allows the robot to learn 6 difficult tasks in the real world, such as opening a translucent condiment cup and slotting a battery with 80-90% success, with only 10 minutes worth of demonstrations. Project website: https://tonyzhaozh.github.io/aloha/"
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:28:31+00:00",
+      "pages": 18,
+      "bytes": 5353485,
+      "path": "papers/closed_loop/act.pdf"
+    },
+    "diffusion_policy": {
+      "title": "Diffusion Policy: Visuomotor Policy Learning via Action Diffusion",
+      "landing_url": "https://arxiv.org/abs/2303.04137",
+      "pdf_url": "https://arxiv.org/pdf/2303.04137",
+      "citation_metadata": {
+        "citation_title": [
+          "Diffusion Policy: Visuomotor Policy Learning via Action Diffusion"
+        ],
+        "citation_author": [
+          "Chi, Cheng",
+          "Xu, Zhenjia",
+          "Feng, Siyuan",
+          "Cousineau, Eric",
+          "Du, Yilun",
+          "Burchfiel, Benjamin",
+          "Tedrake, Russ",
+          "Song, Shuran"
+        ],
+        "citation_date": [
+          "2023/03/07"
+        ],
+        "citation_online_date": [
+          "2024/03/14"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2303.04137"
+        ],
+        "citation_arxiv_id": [
+          "2303.04137"
+        ],
+        "citation_abstract": [
+          "This paper introduces Diffusion Policy, a new way of generating robot behavior by representing a robot's visuomotor policy as a conditional denoising diffusion process. We benchmark Diffusion Policy across 12 different tasks from 4 different robot manipulation benchmarks and find that it consistently outperforms existing state-of-the-art robot learning methods with an average improvement of 46.9%. Diffusion Policy learns the gradient of the action-distribution score function and iteratively optimizes with respect to this gradient field during inference via a series of stochastic Langevin dynamics steps. We find that the diffusion formulation yields powerful advantages when used for robot policies, including gracefully handling multimodal action distributions, being suitable for high-dimensional action spaces, and exhibiting impressive training stability. To fully unlock the potential of diffusion models for visuomotor policy learning on physical robots, this paper presents a set of key technical contributions including the incorporation of receding horizon control, visual conditioning, and the time-series diffusion transformer. We hope this work will help motivate a new generation of policy learning techniques that are able to leverage the powerful generative modeling capabilities of diffusion models. Code, data, and training details is publicly available diffusion-policy.cs.columbia.edu"
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:28:35+00:00",
+      "pages": 19,
+      "bytes": 6192199,
+      "path": "papers/closed_loop/diffusion_policy.pdf"
+    },
+    "cos": {
+      "title": "Unveiling Chain of Step Reasoning for Vision-Language Models with Fine-grained Rewards",
+      "landing_url": "https://arxiv.org/abs/2509.19003",
+      "pdf_url": "https://arxiv.org/pdf/2509.19003",
+      "citation_metadata": {
+        "citation_title": [
+          "Unveiling Chain of Step Reasoning for Vision-Language Models with Fine-grained Rewards"
+        ],
+        "citation_author": [
+          "Chen, Honghao",
+          "Lou, Xingzhou",
+          "Feng, Xiaokun",
+          "Huang, Kaiqi",
+          "Wang, Xinlong"
+        ],
+        "citation_date": [
+          "2025/09/23"
+        ],
+        "citation_online_date": [
+          "2025/09/23"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2509.19003"
+        ],
+        "citation_arxiv_id": [
+          "2509.19003"
+        ],
+        "citation_abstract": [
+          "Chain of thought reasoning has demonstrated remarkable success in large language models, yet its adaptation to vision-language reasoning remains an open challenge with unclear best practices. Existing attempts typically employ reasoning chains at a coarse-grained level, which struggles to perform fine-grained structured reasoning and, more importantly, are difficult to evaluate the reward and quality of intermediate reasoning. In this work, we delve into chain of step reasoning for vision-language models, enabling assessing reasoning step quality accurately and leading to effective reinforcement learning and inference-time scaling with fine-grained rewards. We present a simple, effective, and fully transparent framework, including the step-level reasoning data, process reward model (PRM), and reinforcement learning training. With the proposed approaches, our models set strong baselines with consistent improvements on challenging vision-language benchmarks. More importantly, we conduct a thorough empirical analysis and ablation study, unveiling the impact of each component and several intriguing properties of inference-time scaling. We believe this paper serves as a baseline for vision-language models and offers insights into more complex multimodal reasoning. Our dataset, PRM, and code will be available at https://github.com/baaivision/CoS."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:28:38+00:00",
+      "pages": 18,
+      "bytes": 975985,
+      "path": "papers/closed_loop/cos.pdf"
+    },
+    "pi0": {
+      "title": "π₀: A Vision-Language-Action Flow Model for General Robot Control",
+      "landing_url": "https://arxiv.org/abs/2410.24164",
+      "pdf_url": "https://arxiv.org/pdf/2410.24164",
+      "citation_metadata": {
+        "citation_title": [
+          "$\\pi_0$: A Vision-Language-Action Flow Model for General Robot Control"
+        ],
+        "citation_author": [
+          "Black, Kevin",
+          "Brown, Noah",
+          "Driess, Danny",
+          "Esmail, Adnan",
+          "Equi, Michael",
+          "Finn, Chelsea",
+          "Fusai, Niccolo",
+          "Groom, Lachy",
+          "Hausman, Karol",
+          "Ichter, Brian",
+          "Jakubczak, Szymon",
+          "Jones, Tim",
+          "Ke, Liyiming",
+          "Levine, Sergey",
+          "Li-Bell, Adrian",
+          "Mothukuri, Mohith",
+          "Nair, Suraj",
+          "Pertsch, Karl",
+          "Shi, Lucy Xiaoyang",
+          "Tanner, James",
+          "Vuong, Quan",
+          "Walling, Anna",
+          "Wang, Haohuan",
+          "Zhilinsky, Ury"
+        ],
+        "citation_date": [
+          "2024/10/31"
+        ],
+        "citation_online_date": [
+          "2026/01/08"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2410.24164"
+        ],
+        "citation_arxiv_id": [
+          "2410.24164"
+        ],
+        "citation_abstract": [
+          "Robot learning holds tremendous promise to unlock the full potential of flexible, general, and dexterous robot systems, as well as to address some of the deepest questions in artificial intelligence. However, bringing robot learning to the level of generality required for effective real-world systems faces major obstacles in terms of data, generalization, and robustness. In this paper, we discuss how generalist robot policies (i.e., robot foundation models) can address these challenges, and how we can design effective generalist robot policies for complex and highly dexterous tasks. We propose a novel flow matching architecture built on top of a pre-trained vision-language model (VLM) to inherit Internet-scale semantic knowledge. We then discuss how this model can be trained on a large and diverse dataset from multiple dexterous robot platforms, including single-arm robots, dual-arm robots, and mobile manipulators. We evaluate our model in terms of its ability to perform tasks in zero shot after pre-training, follow language instructions from people and from a high-level VLM policy, and its ability to acquire new skills via fine-tuning. Our results cover a wide variety of tasks, such as laundry folding, table cleaning, and assembling boxes."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:28:44+00:00",
+      "pages": 17,
+      "bytes": 7893845,
+      "path": "papers/closed_loop/pi0.pdf"
+    },
+    "pi05": {
+      "title": "π₀.₅: a Vision-Language-Action Model with Open-World Generalization",
+      "landing_url": "https://arxiv.org/abs/2504.16054",
+      "pdf_url": "https://arxiv.org/pdf/2504.16054",
+      "citation_metadata": {
+        "citation_title": [
+          "$\\pi_{0.5}$: a Vision-Language-Action Model with Open-World Generalization"
+        ],
+        "citation_author": [
+          "Intelligence, Physical",
+          "Black, Kevin",
+          "Brown, Noah",
+          "Darpinian, James",
+          "Dhabalia, Karan",
+          "Driess, Danny",
+          "Esmail, Adnan",
+          "Equi, Michael",
+          "Finn, Chelsea",
+          "Fusai, Niccolo",
+          "Galliker, Manuel Y.",
+          "Ghosh, Dibya",
+          "Groom, Lachy",
+          "Hausman, Karol",
+          "Ichter, Brian",
+          "Jakubczak, Szymon",
+          "Jones, Tim",
+          "Ke, Liyiming",
+          "LeBlanc, Devin",
+          "Levine, Sergey",
+          "Li-Bell, Adrian",
+          "Mothukuri, Mohith",
+          "Nair, Suraj",
+          "Pertsch, Karl",
+          "Ren, Allen Z.",
+          "Shi, Lucy Xiaoyang",
+          "Smith, Laura",
+          "Springenberg, Jost Tobias",
+          "Stachowicz, Kyle",
+          "Tanner, James",
+          "Vuong, Quan",
+          "Walke, Homer",
+          "Walling, Anna",
+          "Wang, Haohuan",
+          "Yu, Lili",
+          "Zhilinsky, Ury"
+        ],
+        "citation_date": [
+          "2025/04/22"
+        ],
+        "citation_online_date": [
+          "2025/04/22"
+        ],
+        "citation_pdf_url": [
+          "https://arxiv.org/pdf/2504.16054"
+        ],
+        "citation_arxiv_id": [
+          "2504.16054"
+        ],
+        "citation_abstract": [
+          "In order for robots to be useful, they must perform practically relevant tasks in the real world, outside of the lab. While vision-language-action (VLA) models have demonstrated impressive results for end-to-end robot control, it remains an open question how far such models can generalize in the wild. We describe $\\pi_{0.5}$, a new model based on $\\pi_{0}$ that uses co-training on heterogeneous tasks to enable broad generalization. $\\pi_{0.5}$\\ uses data from multiple robots, high-level semantic prediction, web data, and other sources to enable broadly generalizable real-world robotic manipulation. Our system uses a combination of co-training and hybrid multi-modal examples that combine image observations, language commands, object detections, semantic subtask prediction, and low-level actions. Our experiments show that this kind of knowledge transfer is essential for effective generalization, and we demonstrate for the first time that an end-to-end learning-enabled robotic system can perform long-horizon and dexterous manipulation skills, such as cleaning a kitchen or bedroom, in entirely new homes."
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T12:28:54+00:00",
+      "pages": 19,
+      "bytes": 16213397,
+      "path": "papers/closed_loop/pi05.pdf"
+    }
+  },
+  "scope": "Public source snapshots with recursive submodules and full PDFs; no datasets, model weights, Git history, or hash verification.",
+  "updated_at": "2026-09-26T12:31:45+00:00"
+}

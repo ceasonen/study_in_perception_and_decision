@@ -1,0 +1,147 @@
+/*
+    This file is part of Corrade.
+
+    Copyright © 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016,
+                2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025
+              Vladimír Vondruš <mosra@centrum.cz>
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+*/
+
+#include "Corrade/Containers/TripleStl.h"
+#include "Corrade/TestSuite/Tester.h"
+
+namespace Corrade { namespace Containers { namespace Test { namespace {
+
+struct TripleStlTest: TestSuite::Tester {
+    explicit TripleStlTest();
+
+    #ifndef CORRADE_NO_STD_IS_TRIVIALLY_TRAITS
+    void triviallyCopyable();
+    void triviallyMovable();
+    #endif
+
+    void convertCopy();
+    void convertMove();
+};
+
+TripleStlTest::TripleStlTest() {
+    #ifndef CORRADE_NO_STD_IS_TRIVIALLY_TRAITS
+    addTests({&TripleStlTest::triviallyCopyable,
+              &TripleStlTest::triviallyMovable});
+    #endif
+
+    addTests({&TripleStlTest::convertCopy,
+              &TripleStlTest::convertMove});
+}
+
+#ifndef CORRADE_NO_STD_IS_TRIVIALLY_TRAITS
+void TripleStlTest::triviallyCopyable() {
+    /* Part of TripleTest::copy() expanded to compare with std::tuple */
+
+    CORRADE_VERIFY(std::is_trivially_copy_constructible<Triple<float, int, bool>>::value);
+    CORRADE_VERIFY(std::is_trivially_copy_assignable<Triple<float, int, bool>>::value);
+    CORRADE_VERIFY(std::is_trivially_copyable<Triple<float, int, bool>>::value);
+
+    {
+        #ifdef CORRADE_TARGET_DINKUMWARE
+        CORRADE_EXPECT_FAIL("MSVC std::tuple is not trivially copy constructible.");
+        #endif
+        CORRADE_VERIFY(std::is_trivially_copy_constructible<std::tuple<float, int, bool>>::value);
+    } {
+        #if defined(CORRADE_TARGET_LIBSTDCXX) || defined(CORRADE_TARGET_LIBCXX) || defined(CORRADE_TARGET_DINKUMWARE)
+        CORRADE_EXPECT_FAIL("libstdc++, libc++ and MSVC std::tuple is not trivially copy assignable.");
+        #endif
+        CORRADE_VERIFY(std::is_trivially_copy_assignable<std::tuple<float, int, bool>>::value);
+        CORRADE_VERIFY(std::is_trivially_copyable<std::tuple<float, int, bool>>::value);
+    }
+}
+
+void TripleStlTest::triviallyMovable() {
+    /* Part of TripleTest::move() expanded to compare with std::tuple */
+
+    CORRADE_VERIFY(std::is_trivially_move_constructible<Triple<float, int, bool>>::value);
+    CORRADE_VERIFY(std::is_trivially_move_assignable<Triple<float, int, bool>>::value);
+    {
+        #if defined(CORRADE_TARGET_LIBSTDCXX) || defined(CORRADE_TARGET_DINKUMWARE)
+        CORRADE_EXPECT_FAIL("libstdc++ and MSVC std::tuple is not trivially move constructible.");
+        #endif
+        CORRADE_VERIFY(std::is_trivially_move_constructible<std::tuple<float, int, bool>>::value);
+    }
+    {
+        #if defined(CORRADE_TARGET_LIBSTDCXX) || defined(CORRADE_TARGET_LIBCXX) || defined(CORRADE_TARGET_DINKUMWARE)
+        CORRADE_EXPECT_FAIL("libstdc++, libc++ and MSVC std::tuple is not trivially move assignable.");
+        #endif
+        CORRADE_VERIFY(std::is_trivially_move_assignable<std::tuple<float, int, bool>>::value);
+    }
+}
+#endif
+
+void TripleStlTest::convertCopy() {
+    std::tuple<float, int, bool> a{35.0f, 4, true};
+
+    Triple<float, int, bool> b = a;
+    CORRADE_COMPARE(b.first(), 35.0f);
+    CORRADE_COMPARE(b.second(), 4);
+    CORRADE_COMPARE(b.third(), true);
+
+    std::tuple<float, int, bool> c = b;
+    CORRADE_COMPARE(std::get<0>(c), 35.0f);
+    CORRADE_COMPARE(std::get<1>(c), 4);
+    CORRADE_COMPARE(std::get<2>(c), true);
+
+    auto d = triple(c);
+    CORRADE_VERIFY(std::is_same<decltype(d), Triple<float, int, bool>>::value);
+    CORRADE_COMPARE(d.first(), 35.0f);
+    CORRADE_COMPARE(d.second(), 4);
+    CORRADE_COMPARE(d.third(), true);
+}
+
+void TripleStlTest::convertMove() {
+    std::tuple<Pointer<float>, Pointer<int>, Pointer<bool>> a{pointer(new float{35.0f}), pointer(new int{4}), Pointer<bool>{Corrade::InPlaceInit, true}};
+
+    Triple<Pointer<float>, Pointer<int>, Pointer<bool>> b = Utility::move(a);
+    CORRADE_COMPARE(*b.first(), 35.0f);
+    CORRADE_COMPARE(*b.second(), 4);
+    CORRADE_COMPARE(*b.third(), true);
+    CORRADE_VERIFY(!std::get<0>(a));
+    CORRADE_VERIFY(!std::get<1>(a));
+    CORRADE_VERIFY(!std::get<2>(a));
+
+    std::tuple<Pointer<float>, Pointer<int>, Pointer<bool>> c = Utility::move(b);
+    CORRADE_COMPARE(*std::get<0>(c), 35.0f);
+    CORRADE_COMPARE(*std::get<1>(c), 4);
+    CORRADE_COMPARE(*std::get<2>(c), true);
+    CORRADE_VERIFY(!b.first());
+    CORRADE_VERIFY(!b.second());
+    CORRADE_VERIFY(!b.third());
+
+    auto d = triple(Utility::move(c));
+    CORRADE_VERIFY(std::is_same<decltype(d), Triple<Pointer<float>, Pointer<int>, Pointer<bool>>>::value);
+    CORRADE_COMPARE(*d.first(), 35.0f);
+    CORRADE_COMPARE(*d.second(), 4);
+    CORRADE_COMPARE(*d.third(), true);
+    CORRADE_VERIFY(!std::get<0>(c));
+    CORRADE_VERIFY(!std::get<1>(c));
+    CORRADE_VERIFY(!std::get<2>(c));
+}
+
+}}}}
+
+CORRADE_TEST_MAIN(Corrade::Containers::Test::TripleStlTest)

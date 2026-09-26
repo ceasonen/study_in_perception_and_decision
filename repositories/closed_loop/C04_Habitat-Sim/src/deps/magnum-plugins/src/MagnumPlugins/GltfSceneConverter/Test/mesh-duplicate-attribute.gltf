@@ -1,0 +1,118 @@
+{
+  "asset": {
+    "version": "2.0"
+  },
+  "buffers": [
+    {
+      "uri": "mesh-duplicate-attribute.bin",
+      "byteLength": 48
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 48,
+      "byteStride": 16,
+      "target": 34962
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC3",
+      "min": [0, 0, 0],
+      "max": [0, 0, 0]
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5123,
+      "count": 3,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 3,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5123,
+      "normalized": true,
+      "count": 3,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5121,
+      "normalized": true,
+      "count": 3,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5121,
+      "normalized": true,
+      "count": 3,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC3",
+      "min": [0, 0, 0],
+      "max": [0, 0, 0]
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5121,
+      "count": 3,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5120,
+      "normalized": true,
+      "count": 3,
+      "type": "SCALAR"
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "_OBJECT_ID": 1,
+            "TEXCOORD_0": 2,
+            "COLOR_0": 3,
+            "_YOLO": 4,
+            "TEXCOORD_1": 5,
+            "COLOR_1": 6,
+            "TEXCOORD_2": 7,
+            "_POSITION_1": 8,
+            "_OBJECT_ID_1": 9,
+            "_YOLO_1": 10
+          },
+          "mode": 6
+        }
+      ]
+    }
+  ]
+}

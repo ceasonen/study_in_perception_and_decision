@@ -1,0 +1,1619 @@
+/*
+    This file is part of Magnum.
+
+    Copyright © 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+                2020, 2021, 2022, 2023, 2024, 2025
+              Vladimír Vondruš <mosra@centrum.cz>
+    Copyright © 2019 Jonathan Hale <squareys@googlemail.com>
+    Copyright © 2021, 2022, 2024 Pablo Escobar <mail@rvrs.in>
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+*/
+
+#include <Corrade/Containers/Optional.h>
+#include <Corrade/Containers/Array.h>
+#include <Corrade/Containers/StridedArrayView.h>
+#include <Corrade/Containers/StringView.h>
+#include <Corrade/TestSuite/Tester.h>
+#include <Corrade/TestSuite/Compare/Container.h>
+#include <Corrade/TestSuite/Compare/Numeric.h>
+#include <Corrade/TestSuite/Compare/String.h>
+#include <Corrade/Utility/Algorithms.h>
+#include <Corrade/Utility/ConfigurationGroup.h>
+#include <Corrade/Utility/DebugStl.h> /** @todo remove once Configuration is std::string-free */
+#include <Corrade/Utility/Format.h>
+#include <Corrade/Utility/Path.h>
+#include <Magnum/DebugTools/CompareImage.h>
+#include <Magnum/Image.h>
+#include <Magnum/ImageView.h>
+#include <Magnum/Math/Color.h>
+#include <Magnum/Math/Half.h>
+#include <Magnum/Math/Swizzle.h>
+#include <Magnum/PixelFormat.h>
+#include <Magnum/Trade/AbstractImageConverter.h>
+#include <Magnum/Trade/AbstractImporter.h>
+#include <Magnum/Trade/ImageData.h>
+#include <Magnum/Trade/TextureData.h>
+
+#include <basisu_comp.h> /* BASISU_LIB_VERSION */
+
+#include "configure.h"
+
+namespace Magnum { namespace Trade { namespace Test { namespace {
+
+struct BasisImageConverterTest: TestSuite::Tester {
+    explicit BasisImageConverterTest();
+
+    void wrongFormat();
+    void unknownOutputFormatData();
+    void unknownOutputFormatFile();
+    void invalidSwizzle();
+    void tooManyLevels();
+    void levelWrongSize();
+    void processError();
+
+    void configPerceptual();
+    void configMipGen();
+
+    void convert1DArray();
+
+    void convert2DR();
+    void convert2DRg();
+    void convert2DRgb();
+    void convert2DRgba();
+    void convert2DMipmaps();
+    void convert2DMipmapsHdr();
+
+    void convertUastcPatchAwaySrgb();
+
+    void convert2DArray();
+    void convert2DArrayOneLayer();
+    void convert2DArrayMipmaps();
+    void convertCubeMap();
+
+    void convertToFile2D();
+    void convertToFile3D();
+
+    void threads();
+    void ktx();
+    void swizzle();
+
+    void openCL();
+
+    /* Explicitly forbid system-wide plugin dependencies */
+    PluginManager::Manager<AbstractImageConverter> _converterManager{"nonexistent"};
+
+    /* Needs to load AnyImageImporter from system-wide location */
+    PluginManager::Manager<AbstractImporter> _manager;
+};
+
+using namespace Containers::Literals;
+
+constexpr struct {
+    const char* name;
+    const Vector3i size;
+    const char* message;
+} TooManyLevelsData[]{
+    {"2D", {1, 1, 0}, "there can be only 1 levels with base image size Vector(1, 1) but got 2"},
+    /* 3D images are treated like and exported as 2D array images */
+    {"2D array", {1, 1, 2}, "there can be only 1 levels with base image size Vector(1, 1, 2) but got 2"}
+};
+
+constexpr struct {
+    const char* name;
+    const Vector3i sizes[2];
+    const char* message;
+} LevelWrongSizeData[]{
+    {"2D", {{4, 5, 0}, {2, 1, 0}}, "expected size Vector(2, 2) for level 1 but got Vector(2, 1)"},
+    /* 3D images are treated like and exported as 2D array images */
+    {"2D array", {{4, 5, 3}, {2, 2, 1}}, "expected size Vector(2, 2, 3) for level 1 but got Vector(2, 2, 1)"}
+};
+
+constexpr struct {
+    const char* name;
+    const PixelFormat format;
+} MipGenData[]{
+    {"", PixelFormat::RGBA8Unorm},
+    {"hdr", PixelFormat::RGBA32F}
+};
+
+enum TransferFunction: std::size_t {
+    Linear,
+    Srgb
+};
+
+constexpr PixelFormat TransferFunctionFormats[2][4]{
+    {PixelFormat::R8Unorm, PixelFormat::RG8Unorm, PixelFormat::RGB8Unorm, PixelFormat::RGBA8Unorm},
+    {PixelFormat::R8Srgb, PixelFormat::RG8Srgb, PixelFormat::RGB8Srgb, PixelFormat::RGBA8Srgb}
+};
+
+constexpr struct {
+    const char* name;
+    bool uastc;
+    const TransferFunction transferFunction;
+} EncodingFormatTransferFunctionData[]{
+    {"Unorm ETC1S", false, TransferFunction::Linear},
+    {"Unorm UASTC", true, TransferFunction::Linear},
+    {"Srgb ETC1S", false, TransferFunction::Srgb},
+    {"Srgb UASTC", true, TransferFunction::Srgb}
+};
+
+const struct {
+    const char* name;
+    const char* pluginName;
+    PixelFormat format;
+    const char* perceptual;
+    bool uastc;
+    /* Yes, the damn thing prints output to stdout without any possibility to
+       redirect anywhere. But we need the verbose output enabled in many cases
+       to verify a message about the sRGB flag being patched away. */
+    bool verbose;
+    PixelFormat expected;
+    const char* message;
+} ConvertUastcPatchAwaySrgbData[]{
+    /* Basis container has sRGB always set for UASTC, needs patching away if
+       linear is desired either via a format or via a flag */
+    {"Unorm ETC1S Basis", "BasisImageConverter",
+        PixelFormat::RGBA8Unorm, "", false, true, PixelFormat::RGBA8Unorm,
+        ""},
+    {"Unorm ETC1S Basis, perceptual=true", "BasisImageConverter",
+        PixelFormat::RGBA8Unorm, "true", false, true, PixelFormat::RGBA8Srgb,
+        ""},
+    {"Unorm UASTC Basis, quiet", "BasisImageConverter",
+        PixelFormat::RGBA8Unorm, "", true, false, PixelFormat::RGBA8Unorm,
+        ""},
+    {"Unorm UASTC Basis", "BasisImageConverter",
+        PixelFormat::RGBA8Unorm, "", true, true, PixelFormat::RGBA8Unorm,
+        "Trade::BasisImageConverter::convertToData(): patching away an incorrect sRGB flag in the output Basis file\n"},
+    {"Unorm UASTC Basis, perceptual=true", "BasisImageConverter",
+        PixelFormat::RGBA8Unorm, "true", true, true, PixelFormat::RGBA8Srgb,
+        ""},
+    {"Srgb ETC1S Basis", "BasisImageConverter",
+        PixelFormat::RGBA8Srgb, "", false, true, PixelFormat::RGBA8Srgb,
+        ""},
+    {"Srgb ETC1S Basis, perceptual=false", "BasisImageConverter",
+        PixelFormat::RGBA8Srgb, "false", false, true, PixelFormat::RGBA8Unorm,
+        ""},
+    {"Srgb UASTC Basis", "BasisImageConverter",
+        PixelFormat::RGBA8Srgb, "", true, true, PixelFormat::RGBA8Srgb,
+        ""},
+    {"Srgb UASTC Basis, perceptual=false", "BasisImageConverter",
+        PixelFormat::RGBA8Srgb, "false", true, true, PixelFormat::RGBA8Unorm,
+        "Trade::BasisImageConverter::convertToData(): patching away an incorrect sRGB flag in the output Basis file\n"},
+    {"HDR Basis", "BasisImageConverter",
+        PixelFormat::RGBA32F, "", false, true, PixelFormat::RGBA16F,
+        "Trade::BasisImageConverter::convertToData(): patching away an incorrect sRGB flag in the output Basis file\n"},
+
+    /* The KTX container doesn't suffer from this problem */
+    {"Unorm UASTC KTX2", "BasisKtxImageConverter",
+        PixelFormat::RGBA8Unorm, "", true, true, PixelFormat::RGBA8Unorm,
+        ""},
+    {"Srgb UASTC KTX2, perceptual=false", "BasisKtxImageConverter",
+        PixelFormat::RGBA8Srgb, "false", true, true, PixelFormat::RGBA8Unorm,
+        ""},
+    {"HDR KTX2", "BasisKtxImageConverter",
+        PixelFormat::RGBA32F, "", false, true, PixelFormat::RGBA16F,
+        ""},
+};
+
+const struct {
+    const char* name;
+    ImageConverterFlags flags;
+    bool quiet;
+} QuietData[]{
+    {"", {}, false},
+    {"quiet", ImageConverterFlag::Quiet, true}
+};
+
+const struct {
+    const char* name;
+    ImageConverterFlags converterFlags;
+    ImageFlags3D imageFlags;
+    const char* message;
+} Convert2DArrayData[]{
+    {"2D array", {}, ImageFlag3D::Array,
+        ""},
+    {"3D", {}, {},
+        "Trade::BasisImageConverter::convertToData(): exporting 3D image as a 2D array image\n"},
+    {"3D, quiet", ImageConverterFlag::Quiet, {},
+        ""}
+};
+
+constexpr struct {
+    const char* name;
+    const char* pluginName;
+} Convert2DArrayOneLayerData[]{
+    {"Basis", "BasisImageConverter"},
+    {"KTX2", "BasisKtxImageConverter"}
+};
+
+const struct {
+    const char* name;
+    ImageFlags3D flags;
+    const char* pluginName;
+} ConvertCubeMapData[]{
+    {"cube map, Basis", ImageFlag3D::CubeMap, "BasisImageConverter"},
+    {"cube map, KTX2", ImageFlag3D::CubeMap, "BasisKtxImageConverter"},
+    {"cube map array, Basis", ImageFlag3D::CubeMap|ImageFlag3D::Array, "BasisImageConverter"},
+    {"cube map array, KTX2", ImageFlag3D::CubeMap|ImageFlag3D::Array, "BasisKtxImageConverter"},
+};
+
+constexpr const char* BasisFileMagic = "sB";
+constexpr const char* KtxFileMagic = "\xabKTX";
+
+constexpr struct {
+    const char* name;
+    const char* pluginName;
+    const char* filename;
+    const char* prefix;
+    const char* expectedExtension;
+    const char* expectedMimeType;
+} ConvertToFileData[]{
+    {"Basis", "BasisImageConverter",
+        "image.basis", BasisFileMagic, "basis", ""},
+    {"KTX2", "BasisImageConverter",
+        /* Yes, the extension is still *.basis here, because both before and
+           after calling convertToFile() the default output format is still
+           Basis */
+        "image.ktx2", KtxFileMagic, "basis", ""},
+    {"KTX2 with explicit plugin name", "BasisKtxImageConverter",
+        "image.foo", KtxFileMagic, "ktx2", "image/ktx2"}
+};
+
+constexpr struct {
+    const char* name;
+    const char* threads;
+} ThreadsData[]{
+    {"", nullptr},
+    {"2 threads", "2"},
+    {"all threads", "0"}
+};
+
+constexpr struct {
+    const char* name;
+    const bool yFlip;
+} FlippedData[]{
+    {"y-flip", true},
+    {"no y-flip", false}
+};
+
+constexpr struct {
+    const char* name;
+    const PixelFormat format;
+    const Color4ub input;
+    const char* swizzle;
+    const Color4ub output;
+} SwizzleData[] {
+    {"R implicit", PixelFormat::R8Unorm, Color4ub{128, 0, 0}, "", Color4ub{128, 128, 128}},
+    {"R none", PixelFormat::R8Unorm, Color4ub{128, 0, 0}, "rgba", Color4ub{128, 0, 0}},
+    {"RG implicit", PixelFormat::RG8Unorm, Color4ub{64, 128, 0}, "", Color4ub{64, 64, 64, 128}},
+    {"RG none", PixelFormat::RG8Unorm, Color4ub{64, 128, 0}, "rgba", Color4ub{64, 128, 0}}
+};
+
+BasisImageConverterTest::BasisImageConverterTest() {
+    addTests({&BasisImageConverterTest::wrongFormat,
+              &BasisImageConverterTest::unknownOutputFormatData,
+              &BasisImageConverterTest::unknownOutputFormatFile,
+              &BasisImageConverterTest::invalidSwizzle});
+
+    addInstancedTests({&BasisImageConverterTest::tooManyLevels},
+        Containers::arraySize(TooManyLevelsData));
+
+    addInstancedTests({&BasisImageConverterTest::levelWrongSize},
+        Containers::arraySize(LevelWrongSizeData));
+
+    addTests({&BasisImageConverterTest::processError,
+              &BasisImageConverterTest::configPerceptual});
+
+    addInstancedTests({&BasisImageConverterTest::configMipGen},
+        Containers::arraySize(MipGenData));
+
+    addTests({&BasisImageConverterTest::convert1DArray});
+
+    addInstancedTests({&BasisImageConverterTest::convert2DR,
+                       &BasisImageConverterTest::convert2DRg,
+                       &BasisImageConverterTest::convert2DRgb,
+                       &BasisImageConverterTest::convert2DRgba},
+        Containers::arraySize(EncodingFormatTransferFunctionData));
+
+    addInstancedTests({&BasisImageConverterTest::convertUastcPatchAwaySrgb},
+        Containers::arraySize(ConvertUastcPatchAwaySrgbData));
+
+    addInstancedTests({&BasisImageConverterTest::convert2DMipmaps},
+        Containers::arraySize(QuietData));
+
+    addTests({&BasisImageConverterTest::convert2DMipmapsHdr});
+
+    addInstancedTests({&BasisImageConverterTest::convert2DArray},
+        Containers::arraySize(Convert2DArrayData));
+
+    addInstancedTests({&BasisImageConverterTest::convert2DArrayOneLayer},
+        Containers::arraySize(Convert2DArrayOneLayerData));
+
+    addTests({&BasisImageConverterTest::convert2DArrayMipmaps});
+
+    addInstancedTests({&BasisImageConverterTest::convertCubeMap},
+        Containers::arraySize(ConvertCubeMapData));
+
+    /* Just testing that image levels and file type get forwarded to
+       doConvertToData(), anything else is tested in convert*() */
+    addInstancedTests({&BasisImageConverterTest::convertToFile2D,
+                       &BasisImageConverterTest::convertToFile3D},
+        Containers::arraySize(ConvertToFileData));
+
+    addInstancedTests({&BasisImageConverterTest::threads},
+        Containers::arraySize(ThreadsData));
+
+    addInstancedTests({&BasisImageConverterTest::ktx},
+        Containers::arraySize(FlippedData));
+
+    addInstancedTests({&BasisImageConverterTest::swizzle},
+        Containers::arraySize(SwizzleData));
+
+    addTests({&BasisImageConverterTest::openCL});
+
+    /* Pull in the AnyImageImporter dependency for image comparison */
+    _manager.load("AnyImageImporter");
+    /* Reset the plugin dir after so it doesn't load anything else from the
+       filesystem. Do this also in case of static plugins (no _FILENAME
+       defined) so it doesn't attempt to load dynamic system-wide plugins. */
+    #ifndef CORRADE_PLUGINMANAGER_NO_DYNAMIC_PLUGIN_SUPPORT
+    _manager.setPluginDirectory({});
+    #endif
+    /* Load optional plugins from the build tree, if defined. Otherwise they're
+       static and already loaded. */
+    #ifdef STBIMAGEIMPORTER_PLUGIN_FILENAME
+    CORRADE_INTERNAL_ASSERT_OUTPUT(_manager.load(STBIMAGEIMPORTER_PLUGIN_FILENAME) & PluginManager::LoadState::Loaded);
+    #endif
+    #ifdef BASISIMPORTER_PLUGIN_FILENAME
+    CORRADE_INTERNAL_ASSERT_OUTPUT(_manager.load(BASISIMPORTER_PLUGIN_FILENAME) & PluginManager::LoadState::Loaded);
+    #endif
+    #ifdef OPENEXRIMPORTER_PLUGIN_FILENAME
+    CORRADE_INTERNAL_ASSERT_OUTPUT(_manager.load(OPENEXRIMPORTER_PLUGIN_FILENAME) & PluginManager::LoadState::Loaded);
+    #endif
+    /* Load the plugin directly from the build tree. Otherwise it's static and
+       already loaded. */
+    #ifdef BASISIMAGECONVERTER_PLUGIN_FILENAME
+    CORRADE_INTERNAL_ASSERT_OUTPUT(_converterManager.load(BASISIMAGECONVERTER_PLUGIN_FILENAME) & PluginManager::LoadState::Loaded);
+    #endif
+
+    /* Create the output directory if it doesn't exist yet */
+    CORRADE_INTERNAL_ASSERT_OUTPUT(Utility::Path::make(BASISIMAGECONVERTER_TEST_OUTPUT_DIR));
+}
+
+void BasisImageConverterTest::wrongFormat() {
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+
+    const char data[8]{};
+    Containers::String out;
+    Error redirectError{&out};
+    CORRADE_VERIFY(!converter->convertToData(ImageView2D{PixelFormat::R32I, {1, 1}, data}));
+    CORRADE_COMPARE(out, "Trade::BasisImageConverter::convertToData(): unsupported format PixelFormat::R32I\n");
+}
+
+void BasisImageConverterTest::unknownOutputFormatData() {
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+
+    /* The converter defaults to .basis output, conversion should succeed */
+
+    const char data[4]{};
+    Containers::Optional<Containers::Array<char>> converted = converter->convertToData(ImageView2D{PixelFormat::RGB8Unorm, {1, 1}, data});
+    CORRADE_VERIFY(converted);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*converted));
+}
+
+void BasisImageConverterTest::unknownOutputFormatFile() {
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+
+    /* The converter defaults to .basis output, conversion should succeed */
+
+    const char data[4]{};
+    const ImageView2D image{PixelFormat::RGB8Unorm, {1, 1}, data};
+    Containers::String filename = Utility::Path::join(BASISIMAGECONVERTER_TEST_OUTPUT_DIR, "file.foo");
+    CORRADE_VERIFY(converter->convertToFile(image, filename));
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openFile(filename));
+}
+
+void BasisImageConverterTest::invalidSwizzle() {
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+
+    const char data[8]{};
+    Containers::String out;
+    Error redirectError{&out};
+
+    converter->configuration().setValue("swizzle", "gbgbg");
+    CORRADE_VERIFY(!converter->convertToData(ImageView2D{PixelFormat::RGBA8Unorm, {1, 1}, data}));
+
+    converter->configuration().setValue("swizzle", "xaaa");
+    CORRADE_VERIFY(!converter->convertToData(ImageView2D{PixelFormat::RGBA8Unorm, {1, 1}, data}));
+
+    CORRADE_COMPARE(out,
+        "Trade::BasisImageConverter::convertToData(): invalid swizzle length, expected 4 but got 5\n"
+        "Trade::BasisImageConverter::convertToData(): invalid characters in swizzle xaaa\n");
+}
+
+void BasisImageConverterTest::tooManyLevels() {
+    auto&& data = TooManyLevelsData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+
+    const UnsignedByte bytes[8]{};
+    CORRADE_INTERNAL_ASSERT(Math::max(Vector3ui{data.size}, 1u).product() <= Containers::arraySize(bytes));
+
+    const UnsignedInt dimensions = Math::min(Vector3ui{data.size}, 1u).sum();
+
+    Containers::String out;
+    Error redirectError{&out};
+    if(dimensions == 1) {
+        CORRADE_VERIFY(!converter->convertToData({
+            ImageView1D{PixelFormat::R8Unorm, data.size.x(), bytes},
+            ImageView1D{PixelFormat::R8Unorm, data.size.x(), bytes}
+        }));
+    } else if(dimensions == 2) {
+        CORRADE_VERIFY(!converter->convertToData({
+            ImageView2D{PixelFormat::R8Unorm, data.size.xy(), bytes},
+            ImageView2D{PixelFormat::R8Unorm, data.size.xy(), bytes}
+        }));
+    } else if(dimensions == 3) {
+        CORRADE_VERIFY(!converter->convertToData({
+            ImageView3D{PixelFormat::R8Unorm, data.size, bytes, ImageFlag3D::Array},
+            ImageView3D{PixelFormat::R8Unorm, data.size, bytes, ImageFlag3D::Array}
+        }));
+    }
+
+    CORRADE_COMPARE(out, Utility::format("Trade::BasisImageConverter::convertToData(): {}\n", data.message));
+}
+
+void BasisImageConverterTest::levelWrongSize() {
+    auto&& data = LevelWrongSizeData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+
+    const UnsignedByte bytes[256]{};
+    CORRADE_INTERNAL_ASSERT(Math::max(Vector3ui{data.sizes[0]}, 1u).product()*4u <= Containers::arraySize(bytes));
+
+    const UnsignedInt dimensions = Math::min(Vector3ui{data.sizes[0]}, 1u).sum();
+
+    Containers::String out;
+    Error redirectError{&out};
+    if(dimensions == 1) {
+        CORRADE_VERIFY(!converter->convertToData({
+            ImageView1D{PixelFormat::RGBA8Unorm, data.sizes[0].x(), bytes},
+            ImageView1D{PixelFormat::RGBA8Unorm, data.sizes[1].x(), bytes}
+        }));
+    } else if(dimensions == 2) {
+        CORRADE_VERIFY(!converter->convertToData({
+            ImageView2D{PixelFormat::RGBA8Unorm, data.sizes[0].xy(), bytes},
+            ImageView2D{PixelFormat::RGBA8Unorm, data.sizes[1].xy(), bytes}
+        }));
+    } else if(dimensions == 3) {
+        CORRADE_VERIFY(!converter->convertToData({
+            ImageView3D{PixelFormat::RGBA8Unorm, data.sizes[0], bytes, ImageFlag3D::Array},
+            ImageView3D{PixelFormat::RGBA8Unorm, data.sizes[1], bytes, ImageFlag3D::Array}
+        }));
+    }
+
+    CORRADE_COMPARE(out, Utility::format("Trade::BasisImageConverter::convertToData(): {}\n", data.message));
+}
+
+void BasisImageConverterTest::processError() {
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    converter->configuration().setValue("max_endpoint_clusters",
+        16128 /* basisu_frontend::cMaxEndpointClusters */ + 1);
+
+    const char bytes[4]{};
+    ImageView2D image{PixelFormat::RGBA8Unorm, Vector2i{1}, bytes};
+
+    Containers::String out;
+    Error redirectError{&out};
+    CORRADE_VERIFY(!converter->convertToData(image));
+    CORRADE_COMPARE(out,
+        "Trade::BasisImageConverter::convertToData(): frontend processing failed\n");
+}
+
+void BasisImageConverterTest::configPerceptual() {
+    const char bytes[4]{};
+    ImageView2D originalImage{PixelFormat::RGBA8Unorm, Vector2i{1}, bytes};
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    /* Empty by default */
+    CORRADE_COMPARE(converter->configuration().value("perceptual"), "");
+
+    Containers::Optional<Containers::Array<char>> compressedDataAutomatic = converter->convertToData(originalImage);
+    CORRADE_VERIFY(compressedDataAutomatic);
+
+    converter->configuration().setValue("perceptual", true);
+
+    Containers::Optional<Containers::Array<char>> compressedDataOverridden = converter->convertToData(originalImage);
+    CORRADE_VERIFY(compressedDataOverridden);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+
+    /* Empty perceptual config means to use the image format to determine if
+       the output data should be sRGB */
+    CORRADE_VERIFY(importer->openData(*compressedDataAutomatic));
+    Containers::Optional<Trade::ImageData2D> image = importer->image2D(0);
+    CORRADE_VERIFY(image);
+    CORRADE_COMPARE(image->format(), PixelFormat::RGBA8Unorm);
+
+    /* Perceptual true/false overrides the input format and forces sRGB on/off */
+    CORRADE_VERIFY(importer->openData(*compressedDataOverridden));
+    image = importer->image2D(0);
+    CORRADE_VERIFY(image);
+    CORRADE_COMPARE(image->format(), PixelFormat::RGBA8Srgb);
+}
+
+void BasisImageConverterTest::configMipGen() {
+    auto&& data = MipGenData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    #if BASISU_LIB_VERSION < 150
+    if(isPixelFormatFloatingPoint(data.format))
+        CORRADE_SKIP("Current version of Basis doesn't support HDR.");
+    #endif
+
+    Containers::Array<char> bytes{ValueInit, pixelFormatSize(data.format)*16*16};
+    ImageView2D originalLevel0{data.format, Vector2i{16}, bytes};
+    ImageView2D originalLevel1{data.format, Vector2i{8}, bytes};
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    /* Empty by default */
+    CORRADE_COMPARE(converter->configuration().value<bool>("mip_gen"), false);
+    converter->configuration().setValue("mip_gen", "");
+
+    Containers::Optional<Containers::Array<char>> compressedDataGenerated = converter->convertToData({originalLevel0});
+    CORRADE_VERIFY(compressedDataGenerated);
+
+    Containers::Optional<Containers::Array<char>> compressedDataProvided = converter->convertToData({originalLevel0, originalLevel1});
+    CORRADE_VERIFY(compressedDataProvided);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    const Containers::StringView importerName = isPixelFormatFloatingPoint(data.format)
+        ? "BasisImporterRGBA16F"_s : "BasisImporterRGBA8"_s;
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate(importerName);
+
+    /* Empty mip_gen config means to use the level count to determine if mip
+       levels should be generated */
+    CORRADE_VERIFY(importer->openData(*compressedDataGenerated));
+    CORRADE_COMPARE(importer->image2DLevelCount(0), 5);
+
+    CORRADE_VERIFY(importer->openData(*compressedDataProvided));
+    CORRADE_COMPARE(importer->image2DLevelCount(0), 2);
+}
+
+template<typename SourceType, typename DestinationType = SourceType, UnsignedInt dimensions>
+Image<dimensions> copyImageWithSkip(const BasicImageView<dimensions>& image, Math::Vector<dimensions, Int> skip, PixelFormat format = PixelFormat{}) {
+    const Math::Vector<dimensions, Int> size = image.size();
+    if(format == PixelFormat{})
+        format = image.format();
+    /* Width includes row alignment to 4 bytes */
+    const UnsignedInt formatSize = pixelFormatSize(format);
+    const UnsignedInt widthWithSkip = ((size[0] + skip[0])*sizeof(DestinationType) + 3)/formatSize*formatSize;
+    const UnsignedInt dataSize = widthWithSkip*(size + skip).product()/(size[0] + skip[0]);
+    Image<dimensions> imageWithSkip{PixelStorage{}.setSkip(Vector3i::pad(skip)), format,
+        size, Containers::Array<char>{ValueInit, dataSize}, image.flags()};
+    Utility::copy(Containers::arrayCast<const DestinationType>(
+        image.template pixels<SourceType>()),
+        imageWithSkip.template pixels<DestinationType>());
+    return imageWithSkip;
+}
+
+void BasisImageConverterTest::convert1DArray() {
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+
+    const char data[8]{};
+    Containers::String out;
+    Error redirectError{&out};
+    CORRADE_VERIFY(!converter->convertToData(ImageView2D{PixelFormat::RGBA8Unorm, {1, 1}, data, ImageFlag2D::Array}));
+    CORRADE_COMPARE(out,
+        "Trade::BasisImageConverter::convertToData(): 1D array images are not supported by Basis Universal\n");
+}
+
+void BasisImageConverterTest::convert2DR() {
+    auto&& data = EncodingFormatTransferFunctionData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgb-63x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalImage = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalImage);
+
+    /* Use the original image and add a skip to ensure the converter reads the
+       image data properly. During copy, we only use R channel to retrieve an
+       R8 image. */
+    const Image2D imageWithSkip = copyImageWithSkip<Color3ub, Math::Vector<1, UnsignedByte>>(
+        ImageView2D(*originalImage), {7, 8}, TransferFunctionFormats[data.transferFunction][0]);
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    if(data.uastc) converter->configuration().setValue("uastc", true);
+    else CORRADE_VERIFY(!converter->configuration().value<bool>("uastc"));
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData(imageWithSkip);
+    CORRADE_VERIFY(compressedData);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    Containers::Optional<Trade::ImageData2D> image = importer->image2D(0);
+    CORRADE_VERIFY(image);
+    CORRADE_VERIFY(!image->isCompressed());
+    CORRADE_COMPARE(image->format(), TransferFunctionFormats[data.transferFunction][3]);
+
+    /* CompareImage doesn't support Srgb formats, so we need to create a view
+       on the original image, but with a Unorm format */
+    const ImageView2D imageViewUnorm{imageWithSkip.storage(),
+        TransferFunctionFormats[TransferFunction::Linear][0], imageWithSkip.size(), imageWithSkip.data()};
+    /* Basis can only load RGBA8 uncompressed data, which corresponds to RRR1
+       from our R8 image data. We chose the red channel from the imported image
+       to compare to our original data. */
+    CORRADE_COMPARE_WITH(
+        (Containers::arrayCast<2, const UnsignedByte>(image->pixels().prefix(
+            {std::size_t(image->size()[1]), std::size_t(image->size()[0]), 1}))),
+        imageViewUnorm,
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImage{21.0f, 0.968f}));
+}
+
+void BasisImageConverterTest::convert2DRg() {
+    auto&& data = EncodingFormatTransferFunctionData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgb-63x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalImage = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalImage);
+
+    /* Use the original image and add a skip to ensure the converter reads the
+       image data properly. During copy, we only use R and G channels to
+       retrieve an RG8 image. */
+    const Image2D imageWithSkip = copyImageWithSkip<Color3ub, Vector2ub>(
+        ImageView2D(*originalImage), {7, 8}, TransferFunctionFormats[data.transferFunction][1]);
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    if(data.uastc) converter->configuration().setValue("uastc", true);
+    else CORRADE_VERIFY(!converter->configuration().value<bool>("uastc"));
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData(imageWithSkip);
+    CORRADE_VERIFY(compressedData);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    Containers::Optional<Trade::ImageData2D> image = importer->image2D(0);
+    CORRADE_VERIFY(image);
+    CORRADE_VERIFY(!image->isCompressed());
+    CORRADE_COMPARE(image->format(), TransferFunctionFormats[data.transferFunction][3]);
+
+    /* CompareImage doesn't support Srgb formats, so we need to create a view
+       on the original image, but with a Unorm format */
+    const ImageView2D imageViewUnorm{imageWithSkip.storage(),
+        TransferFunctionFormats[TransferFunction::Linear][1], imageWithSkip.size(), imageWithSkip.data()};
+    /* Basis can only load RGBA8 uncompressed data, which corresponds to RRRG
+       from our RG8 image data. We chose the B and A channels from the imported
+       image to compare to our original data. */
+    CORRADE_COMPARE_WITH(
+        (Containers::arrayCast<2, const Math::Vector2<UnsignedByte>>(image->pixels().exceptPrefix({0, 0, 2}))),
+        imageViewUnorm,
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImage{22.0f, 1.039f}));
+}
+
+void BasisImageConverterTest::convert2DRgb() {
+    auto&& data = EncodingFormatTransferFunctionData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgb-63x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalImage = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalImage);
+
+    /* Use the original image and add a skip to ensure the converter reads the
+       image data properly */
+    const Image2D imageWithSkip = copyImageWithSkip<Color3ub>(
+        ImageView2D(*originalImage), {7, 8}, TransferFunctionFormats[data.transferFunction][2]);
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    if(data.uastc) converter->configuration().setValue("uastc", true);
+    else CORRADE_VERIFY(!converter->configuration().value<bool>("uastc"));
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData(imageWithSkip);
+    CORRADE_VERIFY(compressedData);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    Containers::Optional<Trade::ImageData2D> image = importer->image2D(0);
+    CORRADE_VERIFY(image);
+    CORRADE_VERIFY(!image->isCompressed());
+    CORRADE_COMPARE(image->format(), TransferFunctionFormats[data.transferFunction][3]);
+
+    CORRADE_COMPARE_WITH(Containers::arrayCast<const Color3ub>(image->pixels<Color4ub>()),
+        Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgb-63x27.png"),
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImageToFile{_manager, 61.0f, 6.622f}));
+}
+
+void BasisImageConverterTest::convert2DRgba() {
+    auto&& data = EncodingFormatTransferFunctionData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalImage = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalImage);
+
+    /* Use the original image and add a skip to ensure the converter reads the
+       image data properly */
+    const Image2D imageWithSkip = copyImageWithSkip<Color4ub>(
+        ImageView2D(*originalImage), {7, 8}, TransferFunctionFormats[data.transferFunction][3]);
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    if(data.uastc) converter->configuration().setValue("uastc", true);
+    else CORRADE_VERIFY(!converter->configuration().value<bool>("uastc"));
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData(imageWithSkip);
+    CORRADE_VERIFY(compressedData);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    Containers::Optional<Trade::ImageData2D> image = importer->image2D(0);
+    CORRADE_VERIFY(image);
+    CORRADE_VERIFY(!image->isCompressed());
+    CORRADE_COMPARE(image->format(), TransferFunctionFormats[data.transferFunction][3]);
+
+    CORRADE_COMPARE_WITH(image->pixels<Color4ub>(),
+        Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png"),
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImageToFile{_manager, 97.25f, 8.547f}));
+}
+
+void BasisImageConverterTest::convertUastcPatchAwaySrgb() {
+    auto&& data = ConvertUastcPatchAwaySrgbData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    #if BASISU_LIB_VERSION < 150
+    if(isPixelFormatFloatingPoint(data.format))
+        CORRADE_SKIP("Current version of Basis doesn't support HDR.");
+    #endif
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate(data.pluginName);
+    /* Yes, the damn thing prints output to stdout without any possibility to
+       redirect anywhere. But we need the verbose output enabled in many cases
+       to verify a message about the sRGB flag being patched away. */
+    if(data.verbose) converter->addFlags(ImageConverterFlag::Verbose);
+    converter->configuration().setValue("uastc", data.uastc);
+    converter->configuration().setValue("perceptual", data.perceptual);
+
+    Containers::Array<char> imageData{ValueInit, pixelFormatSize(data.format)*4*4};
+
+    Containers::String out;
+    Containers::Optional<Containers::Array<char>> compressedData;
+    {
+        Debug redirectOutput{&out};
+        compressedData = converter->convertToData(ImageView2D{data.format, {4, 4}, imageData});
+        CORRADE_VERIFY(compressedData);
+    }
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    const Containers::StringView importerName = isPixelFormatFloatingPoint(data.format)
+        ? "BasisImporterRGBA16F"_s : "BasisImporterRGBA8"_s;
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate(importerName);
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    Containers::Optional<ImageData2D> image = importer->image2D(0);
+    CORRADE_VERIFY(image);
+    CORRADE_VERIFY(!image->isCompressed());
+    CORRADE_COMPARE(image->format(), data.expected);
+    CORRADE_COMPARE(out, data.message);
+}
+
+void BasisImageConverterTest::convert2DMipmaps() {
+    auto&& data = QuietData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+
+    struct Level {
+        const char* file;
+        Containers::Optional<Image2D> imageWithSkip;
+        float maxThreshold;
+        float meanThreshold;
+    } levels[3] {
+        {"rgba-63x27.png", {}, 97.25f, 7.882f},
+        {"rgba-31x13.png", {}, 81.0f, 14.33f},
+        {"rgba-15x6.png", {}, 76.25f, 24.5f}
+    };
+
+    for(Level& level: levels) {
+        CORRADE_ITERATION(level.file);
+        CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, level.file)));
+        Containers::Optional<Trade::ImageData2D> originalImage = pngImporter->image2D(0);
+        CORRADE_VERIFY(originalImage);
+        /* Use the original images and add a skip to ensure the converter reads
+           the image data properly */
+        level.imageWithSkip = copyImageWithSkip<Color4ub>(ImageView2D(*originalImage), {7, 8});
+    }
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    converter->addFlags(data.flags);
+
+    /* Off by default */
+    CORRADE_COMPARE(converter->configuration().value<bool>("mip_gen"), false);
+    /* Making sure that providing custom levels turns off automatic mip level
+       generation. We only provide an incomplete mip chain so we can tell if
+       basis generated any extra levels beyond that. */
+    converter->configuration().setValue("mip_gen", true);
+
+    Containers::String out;
+    Warning redirectWarning{&out};
+
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData({*levels[0].imageWithSkip, *levels[1].imageWithSkip, *levels[2].imageWithSkip});
+    CORRADE_VERIFY(compressedData);
+    if(data.quiet)
+        CORRADE_COMPARE(out, "");
+    else
+        CORRADE_COMPARE(out, "Trade::BasisImageConverter::convertToData(): found user-supplied mip levels, ignoring mip_gen config value\n");
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    CORRADE_COMPARE(importer->image2DCount(), 1);
+    CORRADE_COMPARE(importer->image2DLevelCount(0), Containers::arraySize(levels));
+
+    for(std::size_t i = 0; i != Containers::arraySize(levels); ++i) {
+        CORRADE_ITERATION("level" << i);
+        const auto result = importer->image2D(0, i);
+        CORRADE_VERIFY(result);
+        CORRADE_COMPARE_WITH(*result,
+            Utility::Path::join(BASISIMPORTER_TEST_DIR, levels[i].file),
+            /* There are moderately significant compression artifacts */
+            (DebugTools::CompareImageToFile{_manager, levels[i].maxThreshold, levels[i].meanThreshold}));
+    }
+}
+
+void BasisImageConverterTest::convert2DMipmapsHdr() {
+    #if BASISU_LIB_VERSION < 150
+    CORRADE_SKIP("Current version of Basis doesn't support HDR.");
+    #endif
+
+    if(_manager.loadState("OpenExrImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("OpenExrImporter plugin not found, cannot test contents");
+
+    /* BasisImageConverter only reads 32-bit floats, but the test files are
+       half float images. Let openexr do the conversion for us. */
+    Containers::Pointer<AbstractImporter> imageRGBA32FImporter = _manager.instantiate("OpenExrImporter");
+    imageRGBA32FImporter->configuration().setValue("forceChannelType", "FLOAT");
+
+    struct Level {
+        const char* file;
+        Containers::Optional<Image2D> imageWithSkip;
+        float maxThreshold;
+        float meanThreshold;
+    } levels[3] {
+        {"rgba-63x27.exr", {}, 0.491f, 0.009f},
+        {"rgba-31x13.exr", {}, 0.339f, 0.018f},
+        {"rgba-15x6.exr", {}, 0.562f, 0.029f}
+    };
+
+    for(Level& level: levels) {
+        CORRADE_ITERATION(level.file);
+        CORRADE_VERIFY(imageRGBA32FImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, level.file)));
+        Containers::Optional<Trade::ImageData2D> originalImage = imageRGBA32FImporter->image2D(0);
+        CORRADE_VERIFY(originalImage);
+        /* Use the original images and add a skip to ensure the converter reads
+           the image data properly */
+        level.imageWithSkip = copyImageWithSkip<Vector4>(ImageView2D(*originalImage), {7, 8});
+    }
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+
+    /* HDR is encoded using UASTC HDR, but shouldn't require uastc to be
+       explicitly enabled */
+    CORRADE_COMPARE(converter->configuration().value<bool>("uastc"), false);
+
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData({*levels[0].imageWithSkip, *levels[1].imageWithSkip, *levels[2].imageWithSkip});
+    CORRADE_VERIFY(compressedData);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA16F");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    CORRADE_COMPARE(importer->image2DCount(), 1);
+    CORRADE_COMPARE(importer->image2DLevelCount(0), Containers::arraySize(levels));
+
+    /* For HDR images alpha is always transcoded to 1. Import source .exr files
+       again as half float RGB for easier comparison against transcoded RGB. */
+    Containers::Pointer<AbstractImporter> imageRGB16FImporter = _manager.instantiate("OpenExrImporter");
+    /* Drop the alpha channel */
+    imageRGB16FImporter->configuration().setValue("a", "");
+
+    for(std::size_t i = 0; i != Containers::arraySize(levels); ++i) {
+        CORRADE_ITERATION("level" << i);
+        auto result = importer->image2D(0, i);
+        CORRADE_VERIFY(result);
+
+        const auto pixels = result->pixels<Color4h>();
+
+        /* Can't use a StridedArrayView with broadcasted size since
+           CompareImage only accepts StridedArrayView for the actual image, not
+           the expected. */
+        using namespace Math::Literals;
+        Containers::Array<Half> ones{DirectInit, size_t(result->size().product()), 1.0_h};
+
+        CORRADE_COMPARE_WITH(pixels.slice(&Color4h::a),
+            (ImageView2D{PixelStorage{}.setAlignment(1), PixelFormat::R16F, result->size(), ones}),
+            /* No errors, always exactly 1.0 */
+            (DebugTools::CompareImage{0.0f, 0.0f}));
+
+        /* Not using CompareImageToFile to avoid overwriting the 4-channel
+           expected .exr with a 3-channel actual image when --save-diagnostic
+           is specified */
+        CORRADE_VERIFY(imageRGB16FImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, levels[i].file)));
+        const auto expected = imageRGB16FImporter->image2D(0);
+        CORRADE_VERIFY(expected);
+
+        CORRADE_COMPARE_WITH(Containers::arrayCast<const Color3h>(pixels), *expected,
+            /* There are moderately significant compression artifacts */
+            (DebugTools::CompareImage{levels[i].maxThreshold, levels[i].meanThreshold}));
+    }
+}
+
+ImageView2D imageViewSlice(const ImageView3D& image, Int slice) {
+    CORRADE_INTERNAL_ASSERT(image.storage().skip() == Vector3i{});
+    return ImageView2D{image.storage(), image.format(), image.size().xy(),
+        Containers::arrayView(image.pixels()[slice].data(), image.pixels().stride()[0])};
+}
+
+void BasisImageConverterTest::convert2DArray() {
+    auto&& data = Convert2DArrayData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalSlice = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalSlice);
+
+    /* Take the input image and create two more variants of it */
+    Containers::Array<char> originalData{NoInit, originalSlice->data().size()*3};
+    MutableImageView3D originalImage{originalSlice->format(), {originalSlice->size(), 3}, originalData, data.imageFlags};
+    Utility::copy(originalSlice->pixels(), originalImage.pixels()[0]);
+    Containers::StridedArrayView3D<Color4ub> pixels = originalImage.pixels<Color4ub>();
+    for(Int y = 0; y != originalImage.size().y(); ++y) {
+        for(Int x = 0; x != originalImage.size().x(); ++x) {
+            const Color4ub& original = pixels[0][y][x];
+            pixels[1][y][x] = Color4ub{255} - original;
+            pixels[2][y][x] = Math::gather<'b', 'r', 'a', 'g'>(original);
+        }
+    }
+
+    /* Use the built image and add a skip to ensure the converter reads the
+       image data properly */
+    const Image3D imageWithSkip = copyImageWithSkip<Color4ub>(ImageView3D(originalImage), {7, 8, 5});
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    converter->addFlags(data.converterFlags);
+
+    Containers::String out;
+    Containers::Optional<Containers::Array<char>> compressedData;
+    {
+        Warning redirectWarning{&out};
+        compressedData = converter->convertToData(imageWithSkip);
+    }
+    CORRADE_VERIFY(compressedData);
+    CORRADE_COMPARE(out, data.message);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    CORRADE_COMPARE(importer->image3DCount(), 1);
+
+    Containers::Optional<Trade::ImageData3D> image = importer->image3D(0);
+    CORRADE_VERIFY(image);
+    CORRADE_COMPARE(image->flags(), ImageFlag3D::Array);
+
+    /* CompareImage only supports 2D images, compare each layer individually */
+    CORRADE_COMPARE_WITH(image->pixels<Color4ub>()[0], imageViewSlice(ImageView3D(originalImage), 0),
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImage{97.25f, 7.89f}));
+    CORRADE_COMPARE_WITH(image->pixels<Color4ub>()[1], imageViewSlice(ImageView3D(originalImage), 1),
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImage{97.25f, 7.735f}));
+    CORRADE_COMPARE_WITH(image->pixels<Color4ub>()[2], imageViewSlice(ImageView3D(originalImage), 2),
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImage{96.5f, 6.928f}));
+
+    #ifdef MAGNUM_BUILD_DEPRECATED
+    CORRADE_COMPARE(importer->textureCount(), 1);
+    Containers::Optional<Trade::TextureData> texture = importer->texture(0);
+    CORRADE_COMPARE(texture->type(), TextureType::Texture2DArray);
+    #endif
+}
+
+void BasisImageConverterTest::convert2DArrayOneLayer() {
+    auto&& data = Convert2DArrayOneLayerData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    /* For KTX2 files, basis_universal treats 2D array images with one layer
+       as standard 2D images:
+       https://github.com/BinomialLLC/basis_universal/blob/928a0caa3e5db2d4748bce6b23507757f9867d14/encoder/basisu_comp.cpp#L1809 */
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalImage = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalImage);
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate(data.pluginName);
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData(ImageView3D{ImageView2D(*originalImage), ImageFlag3D::Array});
+    CORRADE_VERIFY(compressedData);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    #ifdef MAGNUM_BUILD_DEPRECATED
+    CORRADE_COMPARE(importer->textureCount(), 1);
+    #endif
+    {
+        CORRADE_EXPECT_FAIL_IF(data.pluginName == "BasisKtxImageConverter"_s,
+            "basis_universal exports KTX2 2D array images with a single layer as 2D images.");
+        CORRADE_COMPARE(importer->image3DCount(), 1);
+
+        #ifdef MAGNUM_BUILD_DEPRECATED
+        Containers::Optional<Trade::TextureData> texture = importer->texture(0);
+        CORRADE_COMPARE(texture->type(), TextureType::Texture2DArray);
+        #endif
+    }
+
+    if(data.pluginName != "BasisKtxImageConverter"_s) {
+        CORRADE_COMPARE(importer->image3DCount(), 1);
+
+        Containers::Optional<Trade::ImageData3D> image = importer->image3D(0);
+        CORRADE_VERIFY(image);
+        CORRADE_COMPARE(image->flags(), ImageFlag3D::Array);
+    } else {
+        CORRADE_COMPARE(importer->image2DCount(), 1);
+
+        Containers::Optional<Trade::ImageData2D> image = importer->image2D(0);
+        CORRADE_VERIFY(image);
+        CORRADE_COMPARE(image->flags(), ImageFlags2D{});
+    }
+}
+
+void BasisImageConverterTest::convert2DArrayMipmaps() {
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+
+    struct Level {
+        const char* file;
+        Containers::Optional<Image3D> originalImage;
+        Containers::Optional<Image3D> imageWithSkip;
+        Containers::Optional<ImageData3D> result;
+    } levels[3] {
+        {"rgba-63x27.png", {}, {}, {}},
+        {"rgba-31x13.png", {}, {}, {}},
+        {"rgba-15x6.png", {}, {}, {}}
+    };
+
+    for(Level& level: levels) {
+        CORRADE_ITERATION(level.file);
+        CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, level.file)));
+        Containers::Optional<Trade::ImageData2D> originalSlice = pngImporter->image2D(0);
+        CORRADE_VERIFY(originalSlice);
+
+        level.originalImage = Image3D{originalSlice->format(), {originalSlice->size(), 3},
+            Containers::Array<char>{NoInit, originalSlice->data().size()*3}, ImageFlag3D::Array};
+        Utility::copy(originalSlice->pixels(), level.originalImage->pixels()[0]);
+        Containers::StridedArrayView3D<Color4ub> pixels = level.originalImage->pixels<Color4ub>();
+        for(Int y = 0; y != level.originalImage->size().y(); ++y) {
+            for(Int x = 0; x != level.originalImage->size().x(); ++x) {
+                const Color4ub& original = pixels[0][y][x];
+                pixels[1][y][x] = Color4ub{255} - original;
+                pixels[2][y][x] = Math::gather<'b', 'r', 'a', 'g'>(original);
+            }
+        }
+
+        /* Use the original images and add a skip to ensure the converter reads
+           the image data properly */
+        level.imageWithSkip = copyImageWithSkip<Color4ub>(ImageView3D(*level.originalImage), {7, 8, 5});
+    }
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData({*levels[0].imageWithSkip, *levels[1].imageWithSkip, *levels[2].imageWithSkip});
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    CORRADE_COMPARE(importer->image3DCount(), 1);
+    CORRADE_COMPARE(importer->image3DLevelCount(0), Containers::arraySize(levels));
+
+    for(std::size_t i = 0; i != Containers::arraySize(levels); ++i) {
+        CORRADE_ITERATION("level" << i);
+        levels[i].result = importer->image3D(0, i);
+        CORRADE_VERIFY(levels[i].result);
+        CORRADE_COMPARE(levels[i].result->flags(), ImageFlag3D::Array);
+    }
+
+    /* CompareImage only supports 2D images, compare each layer individually */
+    for(Int i = 0; i != levels[0].originalImage->size().z(); ++i) {
+        CORRADE_ITERATION("level 0, layer" << i);
+        CORRADE_COMPARE_WITH(levels[0].result->pixels<Color4ub>()[i],
+            imageViewSlice(ImageView3D(*levels[0].originalImage), i),
+            /* There are moderately significant compression artifacts */
+            (DebugTools::CompareImage{97.25f, 7.914f}));
+    }
+    for(Int i = 0; i != levels[0].originalImage->size().z(); ++i) {
+        CORRADE_ITERATION("level 1, layer" << i);
+        CORRADE_COMPARE_WITH(levels[1].result->pixels<Color4ub>()[i],
+            imageViewSlice(ImageView3D(*levels[1].originalImage), i),
+            /* There are moderately significant compression artifacts */
+            (DebugTools::CompareImage{87.0f, 14.453f}));
+    }
+    for(Int i = 0; i != levels[0].originalImage->size().z(); ++i) {
+        CORRADE_ITERATION("level 2, layer" << i);
+        CORRADE_COMPARE_WITH(levels[2].result->pixels<Color4ub>()[i],
+            imageViewSlice(ImageView3D(*levels[2].originalImage), i),
+            /* There are moderately significant compression artifacts */
+            (DebugTools::CompareImage{80.5f, 23.878f}));
+    }
+
+    #ifdef MAGNUM_BUILD_DEPRECATED
+    CORRADE_COMPARE(importer->textureCount(), 1);
+    Containers::Optional<Trade::TextureData> texture = importer->texture(0);
+    CORRADE_COMPARE(texture->type(), TextureType::Texture2DArray);
+    #endif
+}
+
+void BasisImageConverterTest::convertCubeMap() {
+    /* Like convert2DArray() but with 6 square images instead of 3 rectangular.
+       Not explicitly testing cube map arrays with 6*n, since that's treated
+       the same way as cube maps in the code and decided only based on slice
+       count. */
+
+    auto&& data = ConvertCubeMapData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-27x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalSlice = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalSlice);
+
+    /* Take the input image and create five more variants of it */
+    Containers::Array<char> originalData{NoInit, originalSlice->data().size()*6};
+    MutableImageView3D originalImage{originalSlice->format(), {originalSlice->size(), 6}, originalData, data.flags};
+    Utility::copy(originalSlice->pixels(), originalImage.pixels()[0]);
+    Containers::StridedArrayView3D<Color4ub> pixels = originalImage.pixels<Color4ub>();
+    for(Int y = 0; y != originalImage.size().y(); ++y) {
+        for(Int x = 0; x != originalImage.size().x(); ++x) {
+            const Color4ub& original = pixels[3][y][x] = pixels[0][y][x];
+            pixels[4][y][x] = pixels[1][y][x] = Color4ub{255} - original;
+            pixels[5][y][x] = pixels[2][y][x] = Math::gather<'b', 'r', 'a', 'g'>(original);
+        }
+    }
+
+    /* Use the built image and add a skip to ensure the converter reads the
+       image data properly */
+    const Image3D imageWithSkip = copyImageWithSkip<Color4ub>(ImageView3D(originalImage), {7, 8, 5});
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate(data.pluginName);
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData(imageWithSkip);
+    CORRADE_VERIFY(compressedData);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    CORRADE_COMPARE(importer->image3DCount(), 1);
+
+    Containers::Optional<Trade::ImageData3D> image = importer->image3D(0);
+    CORRADE_VERIFY(image);
+    if(data.flags & ImageFlag3D::Array) {
+        CORRADE_EXPECT_FAIL("basis_universal treats cube map array images the same way as cube map images, so a single-layer cube map array gets written as a plain cube map.");
+        CORRADE_COMPARE(image->flags(), ImageFlag3D::CubeMap|ImageFlag3D::Array);
+    }
+    CORRADE_COMPARE(image->flags(), ImageFlag3D::CubeMap);
+
+    /* CompareImage only supports 2D images, compare each layer individually */
+    for(std::size_t i: {0, 3}) {
+        CORRADE_ITERATION(i);
+        CORRADE_COMPARE_WITH(image->pixels<Color4ub>()[i + 0], imageViewSlice(ImageView3D(originalImage), 0),
+            /* There are moderately significant compression artifacts */
+            (DebugTools::CompareImage{89.5f, 10.8f}));
+        CORRADE_COMPARE_WITH(image->pixels<Color4ub>()[i + 1], imageViewSlice(ImageView3D(originalImage), 1),
+            /* There are moderately significant compression artifacts */
+            (DebugTools::CompareImage{89.5f, 10.6f}));
+        CORRADE_COMPARE_WITH(image->pixels<Color4ub>()[i + 2], imageViewSlice(ImageView3D(originalImage), 2),
+            /* There are moderately significant compression artifacts */
+            (DebugTools::CompareImage{90.0f, 9.26f}));
+    }
+
+    #ifdef MAGNUM_BUILD_DEPRECATED
+    CORRADE_COMPARE(importer->textureCount(), 1);
+
+    Containers::Optional<Trade::TextureData> texture = importer->texture(0);
+    if(data.flags & ImageFlag3D::Array) {
+        CORRADE_EXPECT_FAIL("basis_universal treats cube map array images the same way as cube map images, so a single-layer cube map array gets written as a plain cube map.");
+        CORRADE_COMPARE(texture->type(), TextureType::CubeMapArray);
+    }
+    CORRADE_COMPARE(texture->type(), TextureType::CubeMap);
+    #endif
+}
+
+void BasisImageConverterTest::convertToFile2D() {
+    auto&& data = ConvertToFileData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalLevel0 = pngImporter->image2D(0);
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-31x13.png")));
+    Containers::Optional<Trade::ImageData2D> originalLevel1 = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalLevel0);
+    CORRADE_VERIFY(originalLevel1);
+
+    const ImageView2D originalLevels[2]{*originalLevel0, *originalLevel1};
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate(data.pluginName);
+    CORRADE_COMPARE(converter->extension(), data.expectedExtension);
+    CORRADE_COMPARE(converter->mimeType(), data.expectedMimeType);
+
+    Containers::String filename = Utility::Path::join(BASISIMAGECONVERTER_TEST_OUTPUT_DIR, data.filename);
+    CORRADE_VERIFY(converter->convertToFile(originalLevels, filename));
+
+    /* Verify it's actually the right format */
+    /** @todo some FileHasPrefix, and possibly optimization for binary data? */
+    Containers::Optional<Containers::String> output = Utility::Path::readString(filename);
+    CORRADE_VERIFY(output);
+    CORRADE_COMPARE_AS(*output, data.prefix,
+        TestSuite::Compare::StringHasPrefix);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openFile(filename));
+    CORRADE_COMPARE(importer->image2DCount(), 1);
+    CORRADE_COMPARE(importer->image2DLevelCount(0), 2);
+
+    Containers::Optional<Trade::ImageData2D> level0 = importer->image2D(0, 0);
+    Containers::Optional<Trade::ImageData2D> level1 = importer->image2D(0, 1);
+    CORRADE_VERIFY(level0);
+    CORRADE_VERIFY(level1);
+
+    CORRADE_COMPARE_WITH(*level0,
+        Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png"),
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImageToFile{_manager, 97.25f, 7.882f}));
+    CORRADE_COMPARE_WITH(*level1,
+        Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-31x13.png"),
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImageToFile{_manager, 81.0f, 14.31f}));
+
+    /* The format should get reset again after so convertToData() isn't left
+       with some random format after */
+    if(data.pluginName == "BasisImageConverter"_s) {
+        Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData(originalLevels);
+        CORRADE_VERIFY(compressedData);
+        /* Not testing with Compare::StringHasPrefix because it would print the
+           whole binary on error. Not wanted.. */
+        CORRADE_VERIFY(Containers::StringView{*compressedData}.hasPrefix(BasisFileMagic));
+    }
+}
+
+void BasisImageConverterTest::convertToFile3D() {
+    auto&& data = ConvertToFileData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalImage = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalImage);
+
+    const ImageView3D originalImage3D{ImageView2D(*originalImage), ImageFlag3D::Array};
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate(data.pluginName);
+    CORRADE_COMPARE(converter->extension(), data.expectedExtension);
+    CORRADE_COMPARE(converter->mimeType(), data.expectedMimeType);
+
+    Containers::String filename = Utility::Path::join(BASISIMAGECONVERTER_TEST_OUTPUT_DIR, data.filename);
+    CORRADE_VERIFY(converter->convertToFile({originalImage3D}, filename));
+
+    /* Verify it's actually the right format */
+    /** @todo some FileHasPrefix, and possibly optimization for binary data? */
+    Containers::Optional<Containers::String> output = Utility::Path::readString(filename);
+    CORRADE_VERIFY(output);
+    CORRADE_COMPARE_AS(*output, data.prefix,
+        TestSuite::Compare::StringHasPrefix);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openFile(filename));
+
+    const bool isKtx = Containers::StringView{data.prefix} == KtxFileMagic;
+    {
+        CORRADE_EXPECT_FAIL_IF(isKtx,
+            "basis_universal exports KTX2 2D array images with a single layer as 2D images.");
+        CORRADE_COMPARE(importer->image3DCount(), 1);
+    }
+
+    if(!isKtx) {
+        Containers::Optional<Trade::ImageData3D> image = importer->image3D(0);
+        CORRADE_VERIFY(image);
+
+        CORRADE_COMPARE_WITH(image->pixels<Color4ub>()[0], *originalImage,
+            /* There are moderately significant compression artifacts */
+            (DebugTools::CompareImage{97.25f, 7.914f}));
+    }
+
+    /* The format should get reset again after so convertToData() isn't left
+       with some random format after */
+    if(data.pluginName == "BasisImageConverter"_s) {
+        Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData({originalImage3D});
+        CORRADE_VERIFY(compressedData);
+        CORRADE_VERIFY(Containers::StringView{*compressedData}.hasPrefix(BasisFileMagic));
+    }
+}
+
+void BasisImageConverterTest::threads() {
+    auto&& data = ThreadsData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalImage = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalImage);
+
+    /* Use the original image and add a skip to ensure the converter reads the
+       image data properly */
+    const Image2D imageWithSkip = copyImageWithSkip<Color4ub>(ImageView2D(*originalImage), {7, 8});
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    if(data.threads) converter->configuration().setValue("threads", data.threads);
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData(imageWithSkip);
+    CORRADE_VERIFY(compressedData);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    Containers::Optional<Trade::ImageData2D> image = importer->image2D(0);
+    CORRADE_VERIFY(image);
+
+    CORRADE_COMPARE_WITH(image->pixels<Color4ub>(),
+        Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png"),
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImageToFile{_manager, 97.25f, 7.914f}));
+}
+
+void BasisImageConverterTest::ktx() {
+    auto&& data = FlippedData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png")));
+    Containers::Optional<Trade::ImageData2D> originalImage = pngImporter->image2D(0);
+    CORRADE_VERIFY(originalImage);
+
+    /* Use the original image and add a skip to ensure the converter reads the
+       image data properly */
+    const Image2D imageWithSkip = copyImageWithSkip<Color4ub>(ImageView2D(*originalImage), {7, 8});
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisKtxImageConverter");
+    converter->configuration().setValue("y_flip", data.yFlip);
+    const Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData(imageWithSkip);
+    CORRADE_VERIFY(compressedData);
+    const Containers::StringView compressedView{Containers::arrayView(*compressedData)};
+
+    CORRADE_VERIFY(compressedView.hasPrefix(KtxFileMagic));
+
+    /* Verify the orientation metadata got properly written to the file */
+    char KTXorientation[] = "KTXorientation\0r?";
+    KTXorientation[sizeof(KTXorientation) - 1] = data.yFlip ? 'u' : 'd';
+    CORRADE_VERIFY(compressedView.contains(KTXorientation));
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    Containers::Optional<Trade::ImageData2D> image = importer->image2D(0);
+    CORRADE_VERIFY(image);
+
+    /* Basis can only load RGBA8 uncompressed data, which corresponds to RGB1
+       from our RGB8 image data. The importer will check the KTXorientation
+       data and Y-flips as appropriate, so nothing else needs to be done
+       here. */
+    Containers::StridedArrayView2D<const Color4ub> pixels = image->pixels<Color4ub>();
+    CORRADE_COMPARE_WITH(pixels,
+        Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-63x27.png"),
+        /* There are moderately significant compression artifacts */
+        (DebugTools::CompareImageToFile{_manager, 97.25f, 9.398f}));
+}
+
+void BasisImageConverterTest::swizzle() {
+    auto&& data = SwizzleData[testCaseInstanceId()];
+    setTestCaseDescription(data.name);
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    /* Default is empty */
+    CORRADE_COMPARE(converter->configuration().value("swizzle"), "");
+    converter->configuration().setValue("swizzle", data.swizzle);
+
+    const Color4ub pixel[1]{data.input};
+    const ImageView2D originalImage{data.format, {1, 1}, Containers::arrayCast<const char>(pixel)};
+
+    Containers::Optional<Containers::Array<char>> compressedData = converter->convertToData(originalImage);
+    CORRADE_VERIFY(compressedData);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    CORRADE_COMPARE(importer->image2DCount(), 1);
+
+    Containers::Optional<Trade::ImageData2D> image = importer->image2D(0);
+    CORRADE_VERIFY(image);
+    CORRADE_COMPARE(image->size(), (Vector2i{1, 1}));
+    /* There are very minor compression artifacts */
+    CORRADE_COMPARE_WITH(
+        Vector4i{image->pixels<Vector4ub>()[0][0]},
+        Vector4i{data.output},
+        TestSuite::Compare::around(Vector4i{2}));
+}
+
+void BasisImageConverterTest::openCL() {
+    #if BASISU_LIB_VERSION < 116
+    CORRADE_SKIP("OpenCL not used in version 1.15 yet.");
+    #endif
+
+    if(_manager.loadState("PngImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("PngImporter plugin not found, cannot test contents");
+
+    Containers::Pointer<AbstractImporter> pngImporter = _manager.instantiate("PngImporter");
+    CORRADE_VERIFY(pngImporter->openFile(Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-31x13.png")));
+    Containers::Optional<Trade::ImageData2D> original = pngImporter->image2D(0);
+    CORRADE_VERIFY(original);
+
+    Containers::Pointer<AbstractImageConverter> converter = _converterManager.instantiate("BasisImageConverter");
+    /* Default is off */
+    CORRADE_COMPARE(converter->configuration().value<bool>("use_opencl"), false);
+    converter->configuration().setValue("use_opencl", true);
+
+    Containers::String out;
+    Containers::Optional<Containers::Array<char>> compressedData;
+    {
+        Warning redirectWarning{&out};
+        compressedData = converter->convertToData(*original);
+    }
+
+    /* If built without OpenCL, converting falls back to CPU and still succeeds */
+    #ifndef OpenCL_FOUND
+    CORRADE_WARN("OpenCL is not available.");
+    CORRADE_COMPARE(out, "Trade::BasisImageConverter::convertToData(): OpenCL not supported, falling back to CPU encoding\n");
+    #else
+    CORRADE_INFO("OpenCL is available.");
+    {
+        #ifdef _BASISIMAGECONVERTER_EXPECT_OPENCL_FRAMEWORK_FAILURE
+        CORRADE_EXPECT_FAIL("Apple OpenCL implementation is used, which likely doesn't work anymore.");
+        #endif
+        CORRADE_COMPARE(out, "");
+    }
+    #endif
+    CORRADE_VERIFY(compressedData);
+
+    if(_manager.loadState("BasisImporter") == PluginManager::LoadState::NotFound)
+        CORRADE_SKIP("BasisImporter plugin not found, cannot test");
+
+    Containers::Pointer<AbstractImporter> importer = _manager.instantiate("BasisImporterRGBA8");
+    CORRADE_VERIFY(importer->openData(*compressedData));
+    CORRADE_COMPARE(importer->image2DCount(), 1);
+
+    /* There are moderately significant compression artifacts. With OpenCL
+       slightly higher so. */
+    #ifndef OpenCL_FOUND
+    constexpr Float MaxThreshold = 81.0f;
+    constexpr Float MeanThreshold = 14.31f;
+    #else
+    constexpr Float MaxThreshold = 82.0f;
+    constexpr Float MeanThreshold = 14.709f;
+    #endif
+
+    const auto result = importer->image2D(0);
+    CORRADE_VERIFY(result);
+    CORRADE_COMPARE_WITH(*result,
+        Utility::Path::join(BASISIMPORTER_TEST_DIR, "rgba-31x13.png"),
+        (DebugTools::CompareImageToFile{_manager, MaxThreshold, MeanThreshold}));
+}
+
+}}}}
+
+CORRADE_TEST_MAIN(Magnum::Trade::Test::BasisImageConverterTest)

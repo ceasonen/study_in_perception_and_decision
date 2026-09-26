@@ -1,0 +1,116 @@
+# Author: mosra <mosra@centrum.cz>
+pkgname=magnum
+pkgver=dev
+pkgrel=1
+pkgdesc="C++11/C++14 graphics middleware for games and data visualization (coverage build)"
+arch=('i686' 'x86_64')
+url="https://magnum.graphics"
+license=('MIT')
+depends=('corrade' 'openal' 'sdl2' 'glfw' 'vulkan-icd-loader')
+makedepends=('cmake' 'ninja' 'lcov')
+checkdepends=('vulkan-swrast')
+options=('!strip')
+provides=('magnum-git')
+
+_rootdir=$startdir/../../
+
+build() {
+    mkdir -p "$_rootdir/build-coverage"
+    cd "$_rootdir/build-coverage"
+
+    # Disable optimization (saves A LOT of compilation time)
+    newcxxflags=$(echo $CXXFLAGS | sed s/-O.//g | sed s/-D_FORTIFY_SOURCE=.//g)
+    export CXXFLAGS="$newcxxflags"
+
+    # Colored output is enabled implicitly. If Ninja detects it's outputting to
+    # a pipe, it strips it away from the output, alternatively you can set the
+    # GCC_COLORS= (empty) env variable to temporarily disable colors. The
+    # inverse, i.e. preserving colors when Ninja outputs to a pipe can be done
+    # with CLICOLOR_FORCE=1: https://github.com/ninja-build/ninja/issues/2196
+    cmake .. \
+        -DCMAKE_CXX_FLAGS="--coverage" \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_COLOR_DIAGNOSTICS=ON \
+        -DMAGNUM_WITH_AUDIO=ON \
+        -DMAGNUM_WITH_VK=ON \
+        -DMAGNUM_WITH_GLFWAPPLICATION=ON \
+        -DMAGNUM_WITH_GLXAPPLICATION=ON \
+        -DMAGNUM_WITH_SDL2APPLICATION=ON \
+        -DMAGNUM_WITH_XEGLAPPLICATION=ON \
+        -DMAGNUM_WITH_WINDOWLESSGLXAPPLICATION=ON \
+        -DMAGNUM_WITH_WINDOWLESSEGLAPPLICATION=ON \
+        -DMAGNUM_WITH_EGLCONTEXT=ON \
+        -DMAGNUM_WITH_GLXCONTEXT=ON \
+        -DMAGNUM_WITH_OPENGLTESTER=ON \
+        -DMAGNUM_WITH_ANYAUDIOIMPORTER=ON \
+        -DMAGNUM_WITH_ANYIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_ANYIMAGEIMPORTER=ON \
+        -DMAGNUM_WITH_ANYSCENECONVERTER=ON \
+        -DMAGNUM_WITH_ANYSCENEIMPORTER=ON \
+        -DMAGNUM_WITH_ANYSHADERCONVERTER=ON \
+        -DMAGNUM_WITH_MAGNUMFONT=ON \
+        -DMAGNUM_WITH_MAGNUMFONTCONVERTER=ON \
+        -DMAGNUM_WITH_OBJIMPORTER=ON \
+        -DMAGNUM_WITH_TGAIMAGECONVERTER=ON \
+        -DMAGNUM_WITH_TGAIMPORTER=ON \
+        -DMAGNUM_WITH_WAVAUDIOIMPORTER=ON \
+        -DMAGNUM_WITH_DISTANCEFIELDCONVERTER=ON \
+        -DMAGNUM_WITH_FONTCONVERTER=ON \
+        -DMAGNUM_WITH_IMAGECONVERTER=ON \
+        -DMAGNUM_WITH_SCENECONVERTER=ON \
+        -DMAGNUM_WITH_SHADERCONVERTER=ON \
+        -DMAGNUM_WITH_GL_INFO=ON \
+        -DMAGNUM_WITH_VK_INFO=ON \
+        -DMAGNUM_WITH_AL_INFO=ON \
+        -DMAGNUM_BUILD_TESTS=ON \
+        -DMAGNUM_BUILD_GL_TESTS=ON \
+        -DMAGNUM_BUILD_VK_TESTS=ON \
+        -G Ninja
+    ninja
+}
+
+check() {
+    cd "$_rootdir/build-coverage"
+    export CORRADE_TEST_SKIP_BENCHMARKS=ON
+    export CORRADE_TEST_COLOR=ON
+    ctest --output-on-failure -j9 || true
+
+    MAGNUM_DISABLE_EXTENSIONS="GL_ARB_invalidate_subdata GL_ARB_multi_bind GL_ARB_separate_shader_objects GL_ARB_texture_storage GL_ARB_texture_storage_multisample GL_ARB_texture_multisample GL_ARB_shading_language_420pack GL_ARB_explicit_uniform_location GL_ARB_explicit_attrib_location GL_ARB_texture_filter_anisotropic" ctest --output-on-failure -j9 -R GLTest || true
+    MAGNUM_DISABLE_EXTENSIONS="GL_ARB_direct_state_access GL_ARB_robustness GL_ARB_multi_bind" ctest --output-on-failure -j9 -R GLTest || true
+    MAGNUM_DISABLE_EXTENSIONS="GL_ARB_get_texture_sub_image" ctest --output-on-failure -j9 -R GLTest || true
+    MAGNUM_DISABLE_EXTENSIONS="GL_ARB_vertex_array_object" ctest --output-on-failure -j9 -R GLTest || true
+    MAGNUM_DISABLE_EXTENSIONS="GL_ARB_uniform_buffer_object GL_ARB_shader_storage_buffer_object" ctest --output-on-failure -j9 -R GLTest || true
+    MAGNUM_DISABLE_EXTENSIONS="GL_KHR_debug" ctest --output-on-failure -j9 -R GLTest || true
+
+    # Run all Vulkan tests with llvmpipe as well
+    # Keep in sync with PKGBUILD, PKGBUILD-release and
+    # package/ci/unix-desktop-vulkan.sh
+    MAGNUM_DEVICE=cpu ctest --output-on-failure -j9 -R VkTest || true
+    for device in "" cpu; do
+        MAGNUM_DEVICE=$device MAGNUM_VULKAN_VERSION=1.0 ctest --output-on-failure -j9 -R VkTest || true
+        MAGNUM_DEVICE=$device MAGNUM_DISABLE_EXTENSIONS="VK_KHR_get_physical_device_properties2 VK_KHR_get_memory_requirements2 VK_KHR_bind_memory2 VK_KHR_create_renderpass2 VK_KHR_copy_commands2 VK_KHR_maintenance1 VK_KHR_multiview VK_KHR_maintenance2" MAGNUM_VULKAN_VERSION=1.0 ctest --output-on-failure -j9 -R VkTest || true
+    done
+
+    ./Debug/bin/magnum-al-info > /dev/null
+    ./Debug/bin/magnum-al-info --extension-strings > /dev/null
+    ./Debug/bin/magnum-gl-info --limits > /dev/null
+    # Not calling vk-info because currently it doesn't do anything that
+    # wouldn't be covered elsewhere (but it causes false positives in coverage)
+
+    rm -rf coverage
+    mkdir coverage
+    # Keep in sync with package/ci/appveyor-desktop{,-mingw}.bat and
+    # circleci.yml, please
+    # TODO figure out a way to avoid adding all those --ignore-errors
+    lcov --ignore-errors mismatch,inconsistent --directory . --capture --output-file coverage.info
+    lcov --ignore-errors inconsistent --extract coverage.info "*/src/Magnum*/*" --output-file coverage.info > /dev/null
+    lcov --ignore-errors inconsistent --remove coverage.info "*/src/MagnumExternal/*" --output-file coverage.info > /dev/null
+    lcov --ignore-errors inconsistent --remove coverage.info "*/Test/*" --output-file coverage.info > /dev/null
+    lcov --ignore-errors inconsistent --remove coverage.info "*/build-coverage/src/*" --output-file coverage.info > /dev/null
+    genhtml --no-function-coverage --missed --output-directory ./coverage coverage.info
+}
+
+package() {
+    echo "Open file://$_rootdir/build-coverage/coverage/index.html to see the results." && false
+}

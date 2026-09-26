@@ -1,0 +1,475 @@
+version: 2.1
+
+orbs:
+  # Version 3.2.4 is the "new" uploader, but it's a 50 MB Node.js *binary* and
+  # doesn't work on ARM64 Linux (or ARM Macs, or FreeBSD for that matter) and
+  # nobody seems to care. Issues opened since Septembe 2021:
+  #   https://github.com/codecov/uploader/issues/347
+  #   https://github.com/codecov/uploader/issues/523
+  #   https://github.com/codecov/uploader/issues/849
+  # The old 1.1.1 still seems to work even though codecov got removed from pip
+  # on 2023-04-14.
+  codecov: codecov/codecov@1.1.1
+
+executors:
+  ubuntu-18_04:
+    docker:
+    - image: ubuntu:bionic-20220427
+  # Anything below 13.4.1 (and all x86 variants) are deprecated as of June 28th
+  # 2024
+  xcode-13_4:
+    macos:
+      xcode: 13.4.1
+    resource_class: macos.m1.medium.gen1
+  arm64:
+    machine:
+      image: ubuntu-2004:2023.07.1
+    resource_class: arm.medium
+
+commands:
+  install-base-linux:
+    parameters:
+      extra:
+        type: string
+        default: ""
+      sudo:
+        type: string
+        default: ""
+    steps:
+    - run:
+        name: Update apt and install base packages
+        # Git is needed always for cloning Corrade etc
+        command: |
+          << parameters.sudo >> apt update
+          if [[ "$CMAKE_CXX_FLAGS" == *"--coverage"* ]]; then export LCOV_PACKAGES="lcov curl"; fi
+          << parameters.sudo >> apt install -y git ninja-build $LCOV_PACKAGES << parameters.extra >>
+
+  install-base-macos:
+    parameters:
+      extra:
+        type: string
+        default: ""
+    steps:
+    - run:
+        name: Install base packages
+        # As usual, homebrew takes five minutes to update and then explodes in
+        # a spectacular way. How is this acceptable?!
+        command: |
+          if [[ "$CMAKE_CXX_FLAGS" == *"--coverage"* ]]; then export LCOV_PACKAGES="lcov"; fi
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake ninja $LCOV_PACKAGES << parameters.extra >>
+    - run:
+        name: Uninstall the pyenv crap and install plain python instead
+        # Otherwise the numpy installed by homebrew is unreachable by actual
+        # user-side python. THIS ALL USED TO WORK BUT NOT ANYMORE. They
+        # subsequently added `brew pyenv-sync` in an attempt to fix this trash
+        # fire, but that damn thing doesn't work at all either. Fuck it, then.
+        # https://github.com/orgs/Homebrew/discussions/4664
+        # https://github.com/Homebrew/brew/issues/17563
+        command: |
+          HOMEBREW_NO_AUTO_UPDATE=1 brew remove pyenv
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install python
+          rm -r ~/.pyenv
+
+  install-gcc-4_8:
+    steps:
+    - run:
+        name: Install GCC 4.8
+        # For some reason, CMake needs a working C compiler, so provice CC as
+        # well for the case when default gcc isn't installed.
+        command: |
+          apt install -y g++-4.8
+          echo 'export CC=gcc-4.8' >> $BASH_ENV
+          echo 'export CXX=g++-4.8' >> $BASH_ENV
+
+  install-cmake:
+    parameters:
+      version:
+        type: string
+      sudo:
+        type: string
+        default: ""
+    steps:
+    - run:
+        name: Install CMake << parameters.version >>
+        command: |
+          version_short=<< parameters.version >>
+          version_short="${version_short%.*}"
+          << parameters.sudo >> apt install -y wget
+          mkdir -p $HOME/cmake && cd $HOME/cmake
+          wget -nc --no-check-certificate https://cmake.org/files/v$version_short/cmake-<< parameters.version >>-Linux-x86_64.tar.gz
+          tar --strip-components=1 -xzf cmake-<< parameters.version >>-Linux-x86_64.tar.gz
+          echo 'export PATH=$HOME/cmake/bin:$PATH' >> $BASH_ENV
+          source $BASH_ENV
+          cmake --version | grep << parameters.version >>
+          ctest --version | grep << parameters.version >>
+
+  install-python-3_6:
+    # Can't use the python3.6 docker image because there I can't install GCC
+    # 4.8. Loosely based on https://gist.github.com/monkut/c4c07059444fd06f3f8661e13ccac619
+    # The deadsnakes PPA no longer supports 16.04, so this repo builds against
+    # 18.04.
+    steps:
+    - run:
+        name: Install Python 3.6 and numpy
+        # The software-properties-common need to be installed in order to have
+        # apt-add-repository. Sigh, adding a repository should be a core
+        # feature ffs!
+        #
+        # Also, "Press ENTER to continue." Are we still in the DOS days?!
+        #
+        # Setting up 3.6 as the default is OF COURSE one command more than
+        # would be acceptable, but am I surprised on this distro?!
+        command: |
+          apt install -y software-properties-common
+          echo -e "\n" | add-apt-repository ppa:deadsnakes/ppa
+          apt update
+          apt install -y python3.6 python3.6-dev python3-pip
+
+          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 10
+
+          python3 --version | grep 3.6
+
+          python3 -m pip install pip --upgrade
+          python3 -m pip install wheel
+
+          pip3 install numpy
+
+  install-pybind11:
+    parameters:
+      version:
+        type: string
+        default: "2.3.0"
+    steps:
+    - run:
+        name: Install Pybind11 << parameters.version >>
+        command: |
+          cd $HOME
+          wget --no-clobber https://github.com/pybind/pybind11/archive/v<< parameters.version >>.tar.gz
+          tar -xzf v<< parameters.version >>.tar.gz
+          cd pybind11-<< parameters.version >>
+          mkdir -p build && cd build
+          cmake .. \
+            -DCMAKE_INSTALL_PREFIX=$HOME/pybind11 \
+            -DPYBIND11_PYTHON_VERSION=3.6 \
+            -DPYBIND11_TEST=OFF \
+            -G Ninja
+          ninja install
+
+  install-swiftshader-gles:
+    parameters:
+      build:
+        type: string
+    steps:
+    - run:
+        name: Install SwiftShader GLES
+        # Zip from https://github.com/mosra/magnum-ci/tree/swiftshader and
+        # self-hosted because GH Actions would make it too simple for people if
+        # you could just download the artifacts directly, right? RIGHT?
+        command: |
+          mkdir -p $HOME/swiftshader && cd $HOME/swiftshader
+          wget https://ci.magnum.graphics/swiftshader-gles-r5904.14dcbed947-<< parameters.build >>.zip
+          unzip swiftshader-gles-r5904.14dcbed947-<< parameters.build >>.zip
+
+  install-meshoptimizer:
+    steps:
+    - run:
+        name: Install meshoptimizer
+        # few commits after 0.14 with a fix for old Apple Clang
+        command: |
+          export MESHOPTIMIZER_VERSION=97c52415c6d29f297a76482ddde22f739292446d
+          mkdir -p $HOME/meshoptimizer && cd $HOME/meshoptimizer
+          wget -nc --no-check-certificate https://github.com/zeux/meshoptimizer/archive/$MESHOPTIMIZER_VERSION.tar.gz
+          tar --strip-components=1 -xzf $MESHOPTIMIZER_VERSION.tar.gz
+          mkdir build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_INSTALL_PREFIX=$HOME/deps \
+            -G Ninja
+          ninja install
+
+  build:
+    parameters:
+      script:
+        type: string
+    steps:
+    - run:
+        name: Install coverage
+        command: pip3 install coverage
+    - checkout
+    - run:
+        name: Build & test
+        command: |
+          if [ "$BUILD_STATIC" != "ON" ]; then export BUILD_STATIC=OFF; fi
+          if [ "$BUILD_DEPRECATED" != "OFF" ]; then export BUILD_DEPRECATED=ON; fi
+          ./package/ci/<< parameters.script >>
+
+  # Official docs say "token not needed for public repos", in reality not using
+  # the token is "extremely flakey". What's best is that if the upload fails,
+  # the damn thing exits with a success error code, and nobody cares:
+  # https://github.com/codecov/codecov-circleci-orb/issues/139
+  upload-codecov:
+    parameters:
+      file:
+        type: string
+    steps:
+      # Second best thing is that the codecov/upload helper takes a `token`
+      # parameter. But the token parameter is an ENVIRONMENT VARIABLE NAME!! So
+      # one just *can't* pass the token there. It got changed arbitrarily in
+      # https://github.com/codecov/codecov-circleci-orb/pull/93 "because
+      # CircleCI docs suggested so", yet all codecov docs suggest just
+      # commiting that token directly to the YML files because "it's fine". So
+      # if it's fine, why do I have to suffer like this?!
+    - run:
+        name: Set codecov upload token because everything is a dumpster fire
+        # An icing on the cake is that CircleCI commands don't allow setting
+        # `environment` for `commands`, only for `jobs`, so I have to do that
+        # via bash, and because the environment isn't passsed from a run to
+        # run, use the BASH_ENV hack. Mmm. Technology.
+        command: |
+          echo 'export CODECOV_TOKEN=ade9e2f1-d6d7-45cb-a292-c5bb1ad45be9' >> "$BASH_ENV"
+    - codecov/upload:
+        file: << parameters.file >>
+
+  lcov:
+    steps:
+    - run:
+        name: Collect code coverage
+        # Keep in sync with PKBUILD-coverage, please
+        command: |
+          lcov $LCOV_EXTRA_OPTS --directory . --capture --output-file coverage.info > /dev/null
+          lcov $LCOV_EXTRA_OPTS --extract coverage.info "*/src/python/*" "*/src/Corrade/*" "*/src/Magnum/*" --output-file coverage.info > /dev/null
+          cd src/python && coverage combine
+    - upload-codecov:
+        file: coverage.info
+
+jobs:
+  linux-gl:
+    executor: ubuntu-18_04
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
+      PLATFORM_GL_API: GLX
+      # It crashes (OOM, probably) with the default setting
+      NINJA_JOBS: -j2
+    steps:
+    # libidn11 needed by CMake
+    - install-base-linux:
+        extra: libidn11 libgl1-mesa-dev libsdl2-dev libglfw3-dev
+    - install-gcc-4_8
+    - install-cmake:
+        version: "3.5.2"
+    - install-python-3_6
+    - install-pybind11
+    - install-meshoptimizer
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  linux-arm64:
+    executor: arm64
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      PLATFORM_GL_API: GLX
+    steps:
+    # Not installing the old GCC 4.8 and CMake 3.5 to speed up. These are
+    # tested more than enough on other jobs. Machine executors need sudo.
+    - install-base-linux:
+        extra: gcc cmake libgl1-mesa-dev libsdl2-dev libglfw3-dev libpython3-dev
+        sudo: sudo
+    # 2.3.0 doesn't work with Python 3.11, this one should
+    - install-pybind11:
+        version: "2.11.1"
+    - run:
+        name: Install numpy
+        command: pip3 install numpy
+    - install-meshoptimizer
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  linux-gles2:
+    executor: ubuntu-18_04
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
+      PLATFORM_GL_API: EGL
+      # STUPID yml interprets unquoted ON as a boolean
+      TARGET_GLES2: "ON"
+      # It crashes (OOM, probably) with the default setting
+      NINJA_JOBS: -j2
+    steps:
+    # libidn11 needed by CMake
+    - install-base-linux:
+        extra: libidn11 libsdl2-dev libglfw3-dev wget unzip
+    - install-gcc-4_8
+    - install-cmake:
+        version: "3.5.2"
+    - install-python-3_6
+    - install-pybind11
+    - install-meshoptimizer
+    - install-swiftshader-gles:
+        build: ubuntu-18.04
+    - build:
+        script: unix-desktop-gles.sh
+    - lcov
+
+  linux-gles3:
+    executor: ubuntu-18_04
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
+      PLATFORM_GL_API: EGL
+      # STUPID yml interprets unquoted OFF as a boolean
+      TARGET_GLES2: "OFF"
+      # It crashes (OOM, probably) with the default setting
+      NINJA_JOBS: -j2
+    steps:
+    # libidn11 needed by CMake
+    - install-base-linux:
+        extra: libidn11 libsdl2-dev libglfw3-dev wget unzip
+    - install-gcc-4_8
+    - install-cmake:
+        version: "3.5.2"
+    - install-python-3_6
+    - install-pybind11
+    - install-meshoptimizer
+    - install-swiftshader-gles:
+        build: ubuntu-18.04
+    - build:
+        script: unix-desktop-gles.sh
+    - lcov
+
+  linux-static:
+    executor: ubuntu-18_04
+    environment:
+      # STUPID yml interprets unquoted ON as a boolean
+      # https://stackoverflow.com/questions/53648244/specifying-the-string-value-yes-in-a-yaml-property
+      BUILD_STATIC: "ON"
+      CMAKE_CXX_FLAGS: --coverage
+      LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
+      PLATFORM_GL_API: GLX
+      # It crashes (OOM, probably) with the default setting
+      NINJA_JOBS: -j2
+    steps:
+    # libidn11 needed by CMake
+    - install-base-linux:
+        extra: libidn11 libsdl2-dev libglfw3-dev
+    - install-gcc-4_8
+    - install-cmake:
+        version: "3.5.2"
+    - install-python-3_6
+    - install-pybind11
+    - install-meshoptimizer
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  linux-nondeprecated:
+    executor: ubuntu-18_04
+    environment:
+      # STUPID yml interprets unquoted OFF as a boolean
+      BUILD_DEPRECATED: "OFF"
+      CMAKE_CXX_FLAGS: --coverage
+      LCOV_EXTRA_OPTS: --gcov-tool /usr/bin/gcov-4.8
+      PLATFORM_GL_API: GLX
+      # It crashes (OOM, probably) with the default setting
+      NINJA_JOBS: -j2
+    steps:
+    # libidn11 needed by CMake
+    - install-base-linux:
+        extra: libidn11 libgl1-mesa-dev libsdl2-dev libglfw3-dev
+    - install-gcc-4_8
+    - install-cmake:
+        version: "3.5.2"
+    - install-python-3_6
+    - install-pybind11
+    - install-meshoptimizer
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  macos-gl:
+    executor: xcode-13_4
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      PLATFORM_GL_API: CGL
+    steps:
+    - install-base-macos:
+        extra: sdl2 glfw wget numpy pybind11
+    - install-meshoptimizer
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+  macos-gles3:
+    executor: xcode-13_4
+    environment:
+      CMAKE_CXX_FLAGS: --coverage
+      PLATFORM_GL_API: EGL
+      # STUPID yml interprets unquoted OFF as a boolean
+      TARGET_GLES2: "OFF"
+    steps:
+    - install-base-macos:
+        extra: sdl2 glfw wget numpy pybind11
+    - install-swiftshader-gles:
+        build: macos12-arm64
+    - install-meshoptimizer
+    - build:
+        script: unix-desktop-gles.sh
+    - lcov
+
+  macos-static:
+    executor: xcode-13_4
+    environment:
+      # STUPID yml interprets unquoted ON as a boolean
+      BUILD_STATIC: "ON"
+      CMAKE_CXX_FLAGS: --coverage
+      PLATFORM_GL_API: CGL
+    steps:
+    - install-base-macos:
+        extra: sdl2 glfw wget numpy pybind11
+    - install-meshoptimizer
+    - build:
+        script: unix-desktop.sh
+    - lcov
+
+workflows:
+  version: 2
+  build:
+    # While there's no actual execution or data dependency between the jobs,
+    # this is done in order to reduce unnecessary credit usage. The GL and
+    # non-deprecated Linux builds are taken as the main sanity checks. Only if
+    # they pass, the rest of the jobs gets gradually executed, with further
+    # dependencies especially for the macOS jobs that take the most credits.
+    jobs:
+    - linux-gl
+    - linux-nondeprecated
+    - linux-arm64:
+        requires:
+        - linux-gl
+        - linux-nondeprecated
+    - linux-gles2:
+        requires:
+        - linux-gl
+        - linux-nondeprecated
+    - linux-gles3:
+        requires:
+        - linux-gl
+        - linux-nondeprecated
+    - linux-static:
+        requires:
+        - linux-gl
+        - linux-nondeprecated
+    - macos-gl:
+        requires:
+        - linux-arm64
+        - linux-gl
+        - linux-nondeprecated
+    - macos-gles3:
+        requires:
+        - linux-gles3
+        - macos-gl
+    - macos-static:
+        requires:
+        - linux-static
+        - macos-gl
