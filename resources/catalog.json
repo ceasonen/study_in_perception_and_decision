@@ -15,6 +15,7 @@
     {"id":"D04","name":"PyMARL","repo":"oxwhirl/pymarl","track":"decision","papers":["qmix"]},
     {"id":"D05","name":"TAPE","repo":"LxzGordon/TAPE","track":"decision","papers":["tape"]},
     {"id":"D06","name":"MALib","repo":"sjtu-marl/malib","track":"decision","papers":["malib","distributed_rl"]},
+    {"id":"D07","name":"Tianshou","repo":"thu-ml/tianshou","track":"decision","role":"RL infrastructure","papers":["tianshou","ppo","sac"]},
     {"id":"C01","name":"DrQ-v2","repo":"facebookresearch/drqv2","track":"closed_loop","papers":["drqv2"]},
     {"id":"C02","name":"DreamerV3","repo":"danijar/dreamerv3","track":"closed_loop","papers":["dreamerv3"]},
     {"id":"C03","name":"Habitat-Lab","repo":"facebookresearch/habitat-lab","track":"closed_loop","papers":["habitat","habitat2"]},
@@ -53,6 +54,7 @@
     {"id":"diffusion_policy","title":"Diffusion Policy: Visuomotor Policy Learning via Action Diffusion","venue":"RSS 2023","arxiv":"2303.04137","track":"closed_loop"},
     {"id":"cos","title":"Unveiling Chain of Step Reasoning for Vision-Language Models with Fine-grained Rewards","venue":"NeurIPS 2025（官方仓库标注）","arxiv":"2509.19003","track":"closed_loop"},
     {"id":"pi0","title":"π₀: A Vision-Language-Action Flow Model for General Robot Control","venue":"arXiv 初版 2024","arxiv":"2410.24164","track":"closed_loop"},
-    {"id":"pi05","title":"π₀.₅: a Vision-Language-Action Model with Open-World Generalization","venue":"arXiv 初版 2025","arxiv":"2504.16054","track":"closed_loop"}
+    {"id":"pi05","title":"π₀.₅: a Vision-Language-Action Model with Open-World Generalization","venue":"arXiv 初版 2025","arxiv":"2504.16054","track":"closed_loop"},
+    {"id":"tianshou","title":"Tianshou: A Highly Modularized Deep Reinforcement Learning Library","venue":"JMLR 23(267):1–6, 2022","url":"https://jmlr.org/papers/v23/21-1127.html","pdf":"https://jmlr.org/papers/volume23/21-1127/21-1127.pdf","track":"decision"}
   ]
 }

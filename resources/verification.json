@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-09-26T12:38:16+00:00",
+  "checked_at": "2026-09-26T13:10:42+00:00",
   "checks": "Presence, archive-member sizes, PDF parsing/page counts, code-entry paths, local links, nested Git paths, upload sizes. No hash verification.",
   "repositories": [
     {
@@ -92,6 +92,13 @@
       "files_in_main_archive": 238,
       "submodule_directories": 0,
       "stale_submodule_declarations": 1
+    },
+    {
+      "id": "D07",
+      "path": "repositories/decision/D07_Tianshou",
+      "files_in_main_archive": 327,
+      "submodule_directories": 0,
+      "stale_submodule_declarations": 0
     },
     {
       "id": "C01",
@@ -295,11 +302,16 @@
       "id": "pi05",
       "pages": 19,
       "bytes": 16213397
+    },
+    {
+      "id": "tianshou",
+      "pages": 6,
+      "bytes": 377924
     }
   ],
-  "archive_files_checked": 25803,
+  "archive_files_checked": 26130,
   "nested_git_count": 0,
-  "total_source_and_pdf_bytes": 1794701624,
+  "total_source_and_pdf_bytes": 1802685682,
   "largest_files": [
     {
       "bytes": 97020784,

@@ -1,6 +1,6 @@
 # 感知与决策博士学习资料库
 
-面向已具备入门基础、尚未限定应用场景、至少可使用 8 张 RTX 4090 的学习者。按“视觉感知 → 序贯决策 → 感知决策闭环”组织第一批 **21 个研究／工具仓库、29 篇论文全文**。检索与收集日期：2026-09-26。
+面向已具备入门基础、尚未限定应用场景、至少可使用 8 张 RTX 4090 的学习者。按“视觉感知 → 序贯决策 → 感知决策闭环”组织 **22 个研究／工具仓库、30 篇论文全文**。检索与收集日期：2026-09-26。
 
 ## 从哪里开始
 
@@ -10,10 +10,13 @@
 
 建议第一轮精读：**DETR → DINOv2 → ByteTrack；PPO → SAC；DrQ-v2 → DreamerV3；MAPPO**。其中最推荐的首个完整视觉决策学习项目是 **DrQ-v2**，随后进入世界模型或多智能体分支。
 
+强化学习程序组织另设 **[RL 基础设施学习专题](docs/RL基础设施学习专题.md)**：从 CleanRL 看清算法，再用 [Tianshou](notes/D07_Tianshou.md) 学数据采集、回放与训练调度，对照 SB3，按需要深入 MALib。Tianshou 已按你下载的 2.0.1 源码整合，并补齐框架论文。
+
 | 学习层次 | 主要资料 | 要建立的能力 |
 | --- | --- | --- |
 | 感知 | DETR、DINOv2／v3、ByteTrack、GlobalTrack、CSTrack、GroundingDINO | 对象、时序、多模态与任务相关表征 |
-| 决策 | PPO／SAC、CleanRL、SB3、MAPPO、QMIX、TAPE、MALib | 策略学习、部分可观测、信用分配与协同 |
+| 决策算法 | PPO／SAC、MAPPO、QMIX、TAPE | 策略学习、部分可观测、信用分配与协同 |
+| RL 基础设施 | CleanRL、SB3、Tianshou、MALib | 数据流、模块接口、采样与更新调度、实验与分布式组织 |
 | 闭环 | DrQ-v2、DreamerV3、Habitat、ACT、Diffusion Policy | 从观测到状态、预测与行动 |
 | 进阶分支 | CoS、OpenPI | 视觉语言奖励、推理与动作适配 |
 
@@ -24,8 +27,9 @@ GlobalTrack、CSTrack、TAPE、CoS 与黄凯奇老师参与的工作对应，学
 - [12 周学习路线及方向分析](docs/学习路线与选题判断.md)
 - [论文阅读指南](docs/论文阅读指南.md)与[论文笔记模板](docs/templates/论文笔记.md)
 - [代码阅读指南](docs/代码阅读指南.md)与[代码笔记模板](docs/templates/代码笔记.md)
-- [21 个仓库总表](docs/资源总表.md)
-- [29 篇论文全文索引](docs/论文索引.md)
+- [RL 基础设施学习专题](docs/RL基础设施学习专题.md)
+- [22 个仓库总表](docs/资源总表.md)
+- [30 篇论文全文索引](docs/论文索引.md)
 - [下载范围、外部数据和权重入口](docs/下载范围与额外资源.md)
 - [逐项学习卡](notes/)
 - [来源清单](resources/catalog.json)、[实际下载记录](resources/download_status.json)、[检查结果](resources/verification.json)
@@ -43,7 +47,7 @@ papers/
   closed_loop/                视觉控制、世界模型、具身与动作论文
 repositories/
   perception/                 7 个源码目录
-  decision/                   6 个源码目录
+  decision/                   7 个源码目录，含 RL 基础设施 Tianshou
   closed_loop/                8 个源码目录，包含展开的上游子模块
 resources/                    来源、学习卡数据、下载与检查记录
 scripts/                      顺序下载、生成索引和检查工具
@@ -52,7 +56,7 @@ downloads/                    本地保留归档与临时元数据，不重复�
 
 ## 下载完成的含义
 
-源码按公开分支归档逐项下载，已声明的子模块另行展开。第三方目录不保留各自的 `.git`，本仓库自身的 Git 用于统一提交。保留上游代码、配置、说明和许可；不把子项目注册成 Git submodule。
+源码按公开分支归档逐项下载，已声明的子模块另行展开；Tianshou 使用用户提供的本地源码快照，未覆盖成在线最新版本。第三方目录不保留各自的 `.git`，本仓库自身的 Git 用于统一提交。保留上游代码、配置、说明和许可；不把子项目注册成 Git submodule。
 
 论文保存全文 PDF，并检查可解析性与页数。独立数据集、模型权重、场景与安装后的训练环境另行准备，不能将源码收集视为论文结果复现。M2RL 的真实代码入口需要账号申请与审核；本库保留相关论文，MALib 是单独的公开学习项目。
 
@@ -62,4 +66,4 @@ python3 scripts/build_indexes.py
 python3 scripts/verify_resources.py
 ```
 
-辅助工具需要 Python 3.11+、curl 和 Poppler（`pdfinfo`／`pdftotext`），不计算或验证文件哈希。各第三方项目安装与训练应采用其各自要求的环境；本资料库没有把 21 个不同依赖栈合成一个训练环境。
+辅助工具需要 Python 3.11+、curl 和 Poppler（`pdfinfo`／`pdftotext`），不计算或验证文件哈希。各第三方项目安装与训练应采用其各自要求的环境；本资料库没有把 22 个不同依赖栈合成一个训练环境。

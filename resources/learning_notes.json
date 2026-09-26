@@ -129,6 +129,16 @@
     "limits":"这是上海交大等作者的独立项目，不是自动化所 M2RL 的代码；环境栈较旧，官方说明主要支持 Linux。",
     "questions":"对手种群的覆盖程度如何影响泛化？系统吞吐和学习效率分别用什么量度？"
   },
+  "D07": {
+    "priority":"RL infra 主线；读通 CleanRL 后进入，与 SB3 对照",
+    "why":"Tianshou 是面向算法研发的 PyTorch RL 基础设施。这里重点学习如何把环境交互、结构化数据、回放、动作生成、学习更新与训练调度拆成可组合的接口，再把自己的算法接进去。用户提供的本地源码已纳入决策分类，不重新覆盖为线上最新版。",
+    "focus":"JMLR 2022 论文用于理解模块化基础设施与统一接口的设计动机；PPO／SAC 论文用于理解优化目标。当前源码 pyproject.toml 标记为 2.0.1，v2 已分离 Policy 和 Algorithm，不能把旧论文图、旧版 PPOPolicy 路径或 process_fn／learn／post_process_fn 接口直接当作当前实现。",
+    "entries":["test/discrete/test_ppo_discrete.py","examples/mujoco/mujoco_sac.py","tianshou/algorithm/algorithm_base.py","tianshou/algorithm/modelfree/ppo.py","tianshou/algorithm/modelfree/sac.py","tianshou/data/batch.py","tianshou/data/collector.py","tianshou/data/buffer/buffer_base.py","tianshou/data/buffer/vecbuf.py","tianshou/env/venvs.py","tianshou/trainer.py","test/base/test_collector.py","test/base/test_buffer.py","CHANGELOG.md"],
+    "milestone":"能够从 CartPole PPO 入口画出 Policy、Algorithm、Collector、Buffer、Trainer 的职责和数据流，解释 PPO 与 SAC 的采样／更新差异，再在自己的练习目录搭建最小训练入口。详细任务见[RL 基础设施专题](../docs/RL基础设施学习专题.md)。",
+    "compute":"先用 CPU 或单张 GPU 与少量向量环境检查完整链路。8 张 4090 优先用于独立种子、不同配置与任务；采样吞吐常取决于 CPU 与环境速度。向量环境、异步采样、单机多 GPU 和跨机器分布式是不同机制，应分别测量。",
+    "limits":"本库保留用户下载的 master 工作文件快照、MIT 许可、示例和测试。未安装依赖或运行训练；基于源码的阅读分析不保证达到论文基准结果。Python 要求见 pyproject.toml（^3.11）；不同环境需另装 extras。训练入口中的 state_dict 保存也不能直接视为完整恢复环境、buffer、随机数与全部调度状态。",
+    "questions":"哪些逻辑必须留在算法里，哪些适合交给 Collector／Trainer？并行环境的 env_id、episode 边界与 RNN state 怎样对齐？terminated／truncated 分别影响 reset 和 bootstrap 的哪一步？提高采样吞吐时，是否同时改变了每个样本的更新次数？"
+  },
   "C01": {
     "priority":"核心精读，最推荐的首个视觉决策项目",
     "why":"DrQ-v2 从像素观测学习连续动作控制，结构相对简洁，是把视觉编码器、增强、经验回放与策略学习连起来的好起点。",

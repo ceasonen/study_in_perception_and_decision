@@ -508,6 +508,27 @@
       "upstream_url": "https://github.com/Physical-Intelligence/openpi",
       "status": "downloaded",
       "completed_at": "2026-09-26T12:30:29+00:00"
+    },
+    "D07": {
+      "repo": "thu-ml/tianshou",
+      "started_at": "2026-09-26T13:06:03+00:00",
+      "submodules": [],
+      "path": "repositories/decision/D07_Tianshou",
+      "branch": "master",
+      "files": 327,
+      "archive_bytes": 2720854,
+      "archive_kind": "user_provided_local_worktree",
+      "archive_path": "downloads/source_archives/D07_Tianshou.tar.gz",
+      "source_kind": "user_provided_local_repository",
+      "source_path_before_integration": "tianshou/",
+      "version_in_pyproject": "2.0.1",
+      "last_upstream_commit_date_and_subject": "2026-04-03 [data collector] Use monotonic clocks for collector timing (#1295)",
+      "license_api": "MIT (local LICENSE)",
+      "upstream_url": "https://github.com/thu-ml/tianshou",
+      "status": "downloaded",
+      "completed_at": "2026-09-26T13:06:03+00:00",
+      "git_metadata_backup": "downloads/git_backups/D07_Tianshou.git",
+      "note": "Imported the user-provided clean master worktree; no online source replacement or digest comparison. Git metadata retained only in ignored local downloads backup."
     }
   },
   "papers": {
@@ -1770,8 +1791,64 @@
       "pages": 19,
       "bytes": 16213397,
       "path": "papers/closed_loop/pi05.pdf"
+    },
+    "tianshou": {
+      "title": "Tianshou: A Highly Modularized Deep Reinforcement Learning Library",
+      "landing_url": "https://jmlr.org/papers/v23/21-1127.html",
+      "pdf_url": "https://jmlr.org/papers/volume23/21-1127/21-1127.pdf",
+      "citation_metadata": {
+        "citation_title": [
+          "Tianshou: A Highly Modularized Deep Reinforcement Learning Library"
+        ],
+        "citation_author": [
+          "Jiayi Weng",
+          "Huayu Chen",
+          "Dong Yan",
+          "Kaichao You",
+          "Alexis Duburcq",
+          "Minghao Zhang",
+          "Yi Su",
+          "Hang Su",
+          "Jun Zhu"
+        ],
+        "citation_journal_title": [
+          "Journal of Machine Learning Research"
+        ],
+        "citation_volume": [
+          "23"
+        ],
+        "citation_issue": [
+          "267"
+        ],
+        "citation_firstpage": [
+          "1"
+        ],
+        "citation_lastpage": [
+          "6"
+        ],
+        "citation_pdf_url": [
+          "http://jmlr.org/papers/volume23/21-1127/21-1127.pdf"
+        ],
+        "citation_publication_date": [
+          "2022"
+        ],
+        "citation_public_url": [
+          "http://jmlr.org/papers/v23/21-1127.html"
+        ],
+        "citation_abstract_html_url": [
+          "http://jmlr.org/papers/v23/21-1127.html"
+        ],
+        "citation_issn": [
+          "1533-7928"
+        ]
+      },
+      "status": "downloaded",
+      "completed_at": "2026-09-26T13:06:18+00:00",
+      "pages": 6,
+      "bytes": 377924,
+      "path": "papers/decision/tianshou.pdf"
     }
   },
   "scope": "Public source snapshots with recursive submodules and full PDFs; no datasets, model weights, Git history, or hash verification.",
-  "updated_at": "2026-09-26T12:31:45+00:00"
+  "updated_at": "2026-09-26T13:06:18+00:00"
 }
